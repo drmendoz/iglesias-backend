@@ -95,7 +95,7 @@ func LoginAdminGarita(c *gin.Context) {
 	utils.CrearRespuesta(nil, adm, c, http.StatusAccepted)
 }
 
-func LoginAdminEtapa(c *gin.Context) {
+func LoginAdminParroquia(c *gin.Context) {
 	creds := &auth.Login{}
 	err := c.ShouldBindJSON(creds)
 
@@ -103,7 +103,7 @@ func LoginAdminEtapa(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Parametros de Request Invalidos"), nil, c, http.StatusBadRequest)
 		return
 	}
-	adm := &models.AdminEtapa{}
+	adm := &models.AdminParroquia{}
 	creds.Contrasena = auth.HashPassword(creds.Contrasena)
 	res := models.Db.Where("Usuario.usuario = ? ", creds.Usuario).Joins("Usuario").Preload("Etapa", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id", "nombre", "imagen", "urbanizacion_id", "pagos_tarjeta",

@@ -18,9 +18,9 @@ import (
 )
 
 func GetAdministradoresEtapa(c *gin.Context) {
-	administradores := []*models.AdminEtapa{}
+	administradores := []*models.AdminParroquia{}
 	idEtapa := c.GetInt("id_etapa")
-	err := models.Db.Where(&models.AdminEtapa{EtapaID: uint(idEtapa)}).Omit("usuario.Contrasena").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
+	err := models.Db.Where(&models.AdminParroquia{EtapaID: uint(idEtapa)}).Omit("usuario.Contrasena").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener administadores"), nil, c, http.StatusInternalServerError)
@@ -44,7 +44,7 @@ func GetAdministradoresEtapa(c *gin.Context) {
 func CreateAdministradorEtapa(c *gin.Context) {
 
 	idEtapa := c.GetInt("id_etapa")
-	adm := &models.AdminEtapa{}
+	adm := &models.AdminParroquia{}
 	rol := c.GetString("rol")
 	isMaster := rol == "master"
 
@@ -61,13 +61,13 @@ func CreateAdministradorEtapa(c *gin.Context) {
 		return
 	}
 	if isMaster {
-		adm.Permisos = models.AdminEtapaPermiso{Alicuota: true, AreaSocial: true,
+		adm.Permisos = models.AdminParroquiaPermiso{Alicuota: true, AreaSocial: true,
 			Emprendimiento: true, Casa: true, Usuario: true, Seguridad: true,
 			Ingreso: true, Voto: true, Directiva: true, Camara: true, Reserva: true,
 			ExpresoEscolar: true, Buzon: true}
 		adm.EsMaster = true
 	}
-	adComp := &models.AdminEtapa{}
+	adComp := &models.AdminParroquia{}
 	err = models.Db.Where("Usuario.usuario = ?", adm.Usuario.Usuario).Joins("Usuario").First(&adComp).Error
 
 	if errors.Is(gorm.ErrRecordNotFound, err) {
@@ -133,7 +133,7 @@ func CreateAdministradorEtapa(c *gin.Context) {
 
 func UpdateAdministradorEtapa(c *gin.Context) {
 
-	adm := &models.AdminEtapa{}
+	adm := &models.AdminParroquia{}
 
 	err := c.ShouldBindJSON(adm)
 	if err != nil {
@@ -142,7 +142,7 @@ func UpdateAdministradorEtapa(c *gin.Context) {
 	}
 	ui, _ := strconv.Atoi(c.Param("id"))
 	adm.ID = uint(ui)
-	adComp := &models.AdminEtapa{}
+	adComp := &models.AdminParroquia{}
 	if adm.Usuario != nil {
 
 		err = models.Db.Where("Usuario.usuario = ?", adm.Usuario.Usuario).Joins("Usuario").First(&adComp).Error
@@ -243,7 +243,7 @@ func GetAdministradorEtapaPorId(c *gin.Context) {
 
 func DeleteAdministradorEtapa(c *gin.Context) {
 	id := c.Param("id")
-	err := models.Db.Delete(&models.AdminEtapa{}, id).Error
+	err := models.Db.Delete(&models.AdminParroquia{}, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.CrearRespuesta(errors.New("No existe administrador"), nil, c, http.StatusNotFound)

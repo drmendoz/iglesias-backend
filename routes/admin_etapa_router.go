@@ -10,7 +10,7 @@ func administradorEtapaRouter(r *gin.RouterGroup) {
 	admin := r.Group("admin-etapa")
 	admin.Use(middlewares.RolEtapaAdminMiddleware())
 	admin.Use(middlewares.AuthMiddleWare())
-	admin.Use(middlewares.ParsingTokenAdminEtapa())
+	admin.Use(middlewares.ParsingTokenAdminParroquia())
 	administradorEtapaRoutes(admin)
 	administradorGaritaRoutes(admin)
 	urbanizacionRoutes(admin)
@@ -40,6 +40,6 @@ func administradorEtapaRouter(r *gin.RouterGroup) {
 	permisoRoutes(admin)
 	categoriaMarketRoutes(admin)
 	buzonRoutes(admin)
-	admin.GET("buzon-recibidos", controllers.GetBuzonesRecibidosAdminEtapa)
+	admin.GET("buzon-recibidos", controllers.GetBuzonesRecibidosAdminParroquia)
 	admin.GET("buzon-enviados", controllers.GetBuzonesEnviados)
 }

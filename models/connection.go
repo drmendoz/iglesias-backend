@@ -52,16 +52,7 @@ func init() {
 
 func migrarTablas() {
 	//Poner tablas para migrar
-	err := Db.AutoMigrate(&Usuario{}, &AdminMaster{}, &AdminEtapa{}, &AdminGarita{},
-		&Urbanizacion{}, &Etapa{}, &Casa{}, &Residente{},
-		&Alicuota{}, &ImagenGaleria{}, &Publicacion{}, &Visita{}, &AreaSocial{}, &CategoriaMarket{},
-		&Emprendimiento{}, &Votacion{}, &OpcionVotacion{},
-		&RespuestaVotacion{}, &ReservacionAreaSocial{},
-		&PagoMarket{}, &Administrativo{}, &ContactoEtapa{}, &Publicidad{},
-		&LecturaPublicacion{}, &PublicacionImagen{}, &EtapaCamara{}, &AreaHorario{}, &HistoriaResidente{}, &LecturaHistoria{},
-		&Suscripcion{}, &EmprendimientoImagen{}, &Delivery{}, &Autorizacion{}, &Venta{}, &EntradaVisita{}, &SalidaVisita{},
-		&Autorizado{}, &Mensaje{}, &RespuestaMensaje{}, &Permiso{}, &Buzon{}, &BuzonDestinatario{}, &BuzonArchivo{}, &AdminEtapaPermiso{}, &BuzonLectura{},
-		&AdminMasterPermiso{})
+	err := Db.AutoMigrate(&Usuario{}, &AdminMaster{}, &AdminParroquia{})
 	if err != nil {
 		utils.Log.Warn(err)
 		utils.Log.Fatal("Error al migrar modelos")

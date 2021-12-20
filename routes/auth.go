@@ -9,7 +9,7 @@ func authRoutes(r *gin.RouterGroup) {
 	auth := r.Group("auth")
 	auth.POST("/admin-master", controllers.LoginAdminMaster)
 	auth.POST("/admin-garita", controllers.LoginAdminGarita)
-	auth.POST("/admin-etapa", controllers.LoginAdminEtapa)
+	auth.POST("/admin-etapa", controllers.LoginAdminParroquia)
 	auth.POST("/residente", controllers.LoginResidente)
 	auth.POST("/residente/cambio", controllers.CambioDeContrasenaResidente)
 	auth.POST("/recover/:rol", controllers.EnviarCodigoTemporal)

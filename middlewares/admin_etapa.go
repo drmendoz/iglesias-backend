@@ -9,10 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ParsingTokenAdminEtapa() gin.HandlerFunc {
+func ParsingTokenAdminParroquia() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := c.GetInt("id_usuario")
-		adm := &models.AdminEtapa{}
+		adm := &models.AdminParroquia{}
 		res := models.Db.Where("Usuario.id = ? ", user).Joins("Usuario").Joins("Etapa").First(adm)
 		if res.Error != nil {
 			utils.CrearRespuesta(errors.New("Error de autorizacion"), nil, c, http.StatusInternalServerError)

@@ -69,7 +69,6 @@ func CreateAdministrador(c *gin.Context) {
 				Residente:     true,
 				Usuario:       true,
 			}
-			adm.EsMaster = true
 		}
 
 		err = tx.Create(adm).Error

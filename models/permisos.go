@@ -4,10 +4,7 @@ import "gorm.io/gorm"
 
 type Permiso struct {
 	gorm.Model
-	Permiso   bool     `json:"permiso"`
-	Modulo    string   `json:"modulo"`
-	UsuarioID uint     `json:"id_usuario"`
-	Usuario   *Usuario `json:"usuario"`
+	Nombre string `json:"nombre"`
 }
 
 func (Permiso) TableName() string {

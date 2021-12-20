@@ -86,7 +86,7 @@ func GetBuzonesEnviados(c *gin.Context) {
 	utils.CrearRespuesta(nil, buzones, c, http.StatusOK)
 }
 
-func GetBuzonesRecibidosAdminEtapa(c *gin.Context) {
+func GetBuzonesRecibidosAdminParroquia(c *gin.Context) {
 	buzones := []*models.Buzon{}
 	idUsuario := c.GetInt("id_usuario")
 	err := models.Db.Where("is_admin = ?", false).Where("buzon_remitente_id is not null ").Preload("Publicador").Preload("Destinatarios.Casa").Preload("Destinatarios").Preload("Casa").Order("created_at desc").Find(&buzones).Error

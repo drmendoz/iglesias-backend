@@ -40,7 +40,7 @@ func EnviarCodigoTemporal(c *gin.Context) {
 		usuario = admin.Usuario
 
 	case "admin-etapa":
-		admin := &models.AdminEtapa{}
+		admin := &models.AdminParroquia{}
 		err = models.Db.Where("Usuario.usuario= ?", usuarioTemp.Usuario).Joins("Usuario").First(admin).Error
 
 		usuario = admin.Usuario
@@ -98,7 +98,7 @@ func CambioDeContrasena(c *gin.Context) {
 		usuario = admin.Usuario
 
 	case "admin-etapa":
-		admin := &models.AdminEtapa{}
+		admin := &models.AdminParroquia{}
 		err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(admin).Error
 		usuario = admin.Usuario
 	default:
