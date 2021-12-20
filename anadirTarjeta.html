@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Agregar Tarjeta</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <link
+      href="https://cdn.paymentez.com/ccapi/sdk/payment_stable.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script
+      src="https://cdn.paymentez.com/ccapi/sdk/payment_stable.min.js"
+      charset="UTF-8"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <style>
+      .panel {
+        margin: 0 auto;
+        background-color: #f5f5f7;
+        border: 1px solid #ddd;
+        padding: 20px;
+        display: block;
+        width: 80%;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn {
+        background: #7875ea;
+        color: #fff;
+        display: block;
+        width: 100%;
+        border: 1px solid rgba(46, 86, 153, 0.0980392);
+        border-bottom-color: rgba(46, 86, 153, 0.4);
+        border-top: 0;
+        border-radius: 4px;
+        font-size: 17px;
+        text-shadow: rgba(46, 86, 153, 0.298039) 0px -1px 0px;
+        line-height: 34px;
+        -webkit-font-smoothing: antialiased;
+        font-weight: bold;
+        display: block;
+        margin-top: 20px;
+      }
+
+      .btn:hover {
+        cursor: pointer;
+      }
+
+      p {
+        overflow-wrap: break-word;
+      }
+    </style>
+  </head>
+
+  <body data-new-gr-c-s-check-loaded="14.1012.0" data-gr-ext-installed="">
+    <div class="row">
+      <div class="col-12">
+        <div
+          id="correcto"
+          class="alert alert-success"
+          role="alert"
+          style="display: none"
+        >
+          La tarjeta se agregó correctamente
+        </div>
+        <div
+          id="review"
+          class="alert alert-warning"
+          role="alert"
+          style="display: none"
+        >
+          La tarjeta esta en revisión. Por favor debe esperar
+        </div>
+        <div
+          id="error"
+          class="alert alert-danger"
+          role="alert"
+          style="display: none"
+        >
+          Hubo un error inesperado. Por favor verifique los datos
+          <p id="errmsg"></p>
+        </div>
+        <div
+          id="mensaje"
+          class="alert alert-warning"
+          role="alert"
+          style="display: none"
+        >
+          Por favor llene los campos para agregar su tarjeta
+        </div>
+      </div>
+      <div class="col-12" style="margin-top: 10px">
+        <div class="panel">
+          <form id="add-card-form">
+            <div
+              class="payment-form"
+              id="my-card"
+              data-capture-name="true"
+            ></div>
+            <button class="btn" type="submit">Guardar</button>
+            <br />
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $("#correcto").hide();
+      $("#review").hide();
+      $("#error").hide();
+      $("#mensaje").hide();
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("id");
+      let email = urlParams.get("correo");
+      var exito = urlParams.get("exito");
+      if (exito) {
+        $("#correcto").show();
+        $("#review").hide();
+        $("#error").hide();
+        $("#mensaje").hide();
+      }
+
+      $(function () {
+        Payment.init("stg", "TPP3-EC-CLIENT", "ZfapAKOk4QFXheRNvndVib9XU3szzg");
+        let form = $("#add-card-form");
+        let submitButton = form.find("button");
+        let submitInitialText = submitButton.text();
+
+        $("#add-card-form").submit(function (e) {
+          e.preventDefault();
+          let myCard = $("#my-card");
+          $("#messages").text("");
+          let cardToSave = myCard.PaymentForm("card");
+          if (cardToSave == null) {
+            $("#correcto").hide();
+            $("#review").hide();
+            $("#error").hide();
+            $("#mensaje").show();
+          } else {
+            submitButton
+              .attr("disabled", "disabled")
+              .text("Card Processing...");
+            console.log({ id, email, cardToSave });
+            Payment.addCard(
+              id,
+              email,
+              cardToSave,
+              successHandler,
+              errorHandler
+            );
+          }
+        });
+
+        let successHandler = function (cardResponse) {
+          if (cardResponse.card.status === "valid") {
+            window.ReactNativeWebView.postMessage(true);
+            window.close()
+          } else if (cardResponse.card.status === "review") {
+            $("#correcto").hide();
+            $("#review").show();
+            $("#error").hide();
+            $("#mensaje").hide();
+            $("#errmsg").text(cardResponse.card.message);
+          } else {
+            $("#correcto").hide();
+            $("#review").hide();
+            $("#error").show();
+            $("#mensaje").hide();
+            $("#errmsg").text(cardResponse.card.message);
+          }
+          submitButton.removeAttr("disabled");
+          submitButton.text(submitInitialText);
+        };
+
+        let errorHandler = function (err) {
+          $("#correcto").hide();
+          $("#review").hide();
+          $("#error").show();
+          $("#mensaje").hide();
+          $("#errmsg").append(err.error.type);
+          submitButton.removeAttr("disabled");
+          submitButton.text(submitInitialText);
+        };
+      });
+    </script>
+  </body>
+</html>
