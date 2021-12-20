@@ -5,13 +5,11 @@ import "gorm.io/gorm"
 type Publicacion struct {
 	gorm.Model
 	Titulo              string               `json:"titulo"`
-	Cuerpo              string               `json:"cuerpo"`
-	Leido               bool                 `json:"leido" gorm:"-"`
-	Adjuntado           bool                 `json:"adjuntado" gorm:"default:false"`
-	UsuarioID           uint                 `json:"id_usuario"`
-	ParroquiaID         uint                 `json:"id_etapa"`
-	Etapa               *Etapa               `json:"etapa"`
-	Usuario             *Usuario             `json:"usuario"`
+	Descripcion         string               `json:"descripcion"`
+	FielID              uint                 `json:"id_fiel"`
+	ParroquiaID         uint                 `json:"id_parroquia"`
+	Parroquia           *Parroquia           `json:"parroquia"`
+	Fiel                *Fiel                `json:"fiel"`
 	IsVertical          bool                 `json:"is_vertical" gorm:"default:false"`
 	ImagenesPublicacion []*PublicacionImagen `json:"imagenes"`
 }

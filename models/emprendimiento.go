@@ -11,7 +11,7 @@ type Emprendimiento struct {
 	Titulo                 string                  `json:"titulo"`
 	Descripcion            string                  `json:"descripcion"`
 	Precio                 float64                 `json:"-"`
-	Estado                 string                  `json:"estado" gorm:"default:'VIG';type:enum('VIG','DES')"`
+	Estado                 string                  `json:"estado" gorm:"default:'DES';type:enum('VIG','DES')"`
 	Imagen                 string                  `json:"imagen,omitempty" gorm:"-"`
 	TelefonoContacto       string                  `json:"telefono_contacto"`
 	PrecioLabel            string                  `json:"precio"`
@@ -22,13 +22,14 @@ type Emprendimiento struct {
 	EmprendimientoImagenes []*EmprendimientoImagen `json:"-" `
 	FechaPublicacion       time.Time               `json:"fecha_publicacion"`
 	FechaVencimiento       time.Time               `json:"fecha_vencimiento"`
-	Premium                bool                    `json:"premium" `
-	FielID                 uint                    `json:"id_residente"`
-	ParroquiaID            uint                    `json:"id_etapa"`
+	FielID                 uint                    `json:"id_fiel"`
+	ParroquiaID            uint                    `json:"id_parroquia"`
+	TransaccionID          uint                    `json:"id_transaccion"`
 	CategoriaMarketID      uint                    `json:"id_categoria"`
 	CategoriaMarket        *CategoriaMarket        `json:"categoria,omitempty"`
-	Fiel                   *Fiel                   `json:"residente,omitempty"`
-	Imagenes               []string                `json:"imagenes" gorm:"-"`
+	Transaccion            *Transaccion            `json:"transaccion,omitempty"`
+	Parroquia              *Parroquia              `json:"parroquia,omitempty"`
+	Fiel                   *Fiel                   `json:"fiel,omitempty"`
 }
 
 func (Emprendimiento) TableName() string {
