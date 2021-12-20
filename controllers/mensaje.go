@@ -15,9 +15,9 @@ import (
 )
 
 func GetMensajes(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	mensajes := []*models.Mensaje{}
-	err := models.Db.Order("created_at DESC").Where("etapa_id = ?", uint(idEtapa)).Preload("Respuestas", func(db *gorm.DB) *gorm.DB {
+	err := models.Db.Order("created_at DESC").Where("etapa_id = ?", uint(idParroquia)).Preload("Respuestas", func(db *gorm.DB) *gorm.DB {
 		return db.Order("respuesta_mensaje.created_at ASC")
 	}).Preload("Noticia").Joins("Autor").Find(&mensajes).Error
 
@@ -48,7 +48,7 @@ func GetMensajePorId(c *gin.Context) {
 	err := models.Db.Preload("Respuestas", func(db *gorm.DB) *gorm.DB {
 		return db.Order("respuesta_mensaje.created_at ASC")
 	}).Preload("Autor", func(db *gorm.DB) *gorm.DB {
-		return db.Joins("Residente")
+		return db.Joins("Fiel")
 	}).Preload("Noticia").First(mensaje, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -75,9 +75,9 @@ func GetMensajePorId(c *gin.Context) {
 }
 
 func CreateMensaje(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	idUsuario := c.GetInt("id_usuario")
-	if idEtapa == 0 {
+	if idParroquia == 0 {
 		utils.CrearRespuesta(errors.New("No existe el id_etapa"), nil, c, http.StatusOK)
 		return
 	}
@@ -89,12 +89,12 @@ func CreateMensaje(c *gin.Context) {
 		return
 	}
 	tx := models.Db.Begin()
-	mensaje.EtapaID = uint(idEtapa)
+	mensaje.ParroquiaID = uint(idParroquia)
 	mensaje.AutorID = uint(idUsuario)
 
 	imagenesArr := mensaje.ImagenesArray
 	if len(imagenesArr) > 0 {
-		idUrb := fmt.Sprintf("%d", mensaje.EtapaID)
+		idUrb := fmt.Sprintf("%d", mensaje.ParroquiaID)
 		imagenes := []string{}
 		for _, imagen := range imagenesArr {
 			imagen, err = img.FromBase64ToImage(imagen, "mensajes/"+time.Now().Format(time.RFC3339Nano)+idUrb, false)
@@ -138,7 +138,7 @@ func UpdateMensaje(c *gin.Context) {
 	}
 	imagenesArr := mensaje.ImagenesArray
 	if len(imagenesArr) > 0 {
-		idUrb := fmt.Sprintf("%d", mensaje.EtapaID)
+		idUrb := fmt.Sprintf("%d", mensaje.ParroquiaID)
 		imagenes := []string{}
 		for _, imagen := range imagenesArr {
 			imagen, err = img.FromBase64ToImage(imagen, "mensajes/"+time.Now().Format(time.RFC3339Nano)+idUrb, false)

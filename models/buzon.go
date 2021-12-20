@@ -21,7 +21,7 @@ type Buzon struct {
 	BuzonRemitenteID *uint                `json:"buzon_remitente_id"`
 	BuzonRemitente   *Buzon               `json:"buzon_remitente"`
 	Mensajes         []*Buzon             `json:"mensajes" gorm:"foreignKey:BuzonRemitenteID"`
-	EtapaID          uint                 `json:"id_etapa"`
+	ParroquiaID      uint                 `json:"id_etapa"`
 	Etapa            *Etapa               `json:"etapa"`
 }
 

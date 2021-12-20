@@ -6,8 +6,8 @@ type RespuestaVotacion struct {
 	gorm.Model
 	OpcionVotacionID uint           `json:"id_opcion_votacion"`
 	OpcionVotacion   OpcionVotacion `json:"opcion_votacion"`
-	ResidenteID      uint           `json:"id_residente"`
-	Residente        Residente      `json:"residente"`
+	FielID           uint           `json:"id_residente"`
+	Fiel             Fiel           `json:"residente"`
 }
 
 func (RespuestaVotacion) TableName() string {

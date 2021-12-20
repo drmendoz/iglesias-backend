@@ -4,10 +4,10 @@ import "gorm.io/gorm"
 
 type LecturaHistoria struct {
 	gorm.Model
-	ResidenteID         uint `json:"id_residente"`
-	HistoriaResidenteID uint `json:"id_historia"`
-	Residente           *Residente
-	HistoriaResidente   *HistoriaResidente
+	FielID         uint `json:"id_residente"`
+	HistoriaFielID uint `json:"id_historia"`
+	Fiel           *Fiel
+	HistoriaFiel   *HistoriaFiel
 }
 
 func (LecturaHistoria) TableName() string {

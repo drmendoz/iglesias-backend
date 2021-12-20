@@ -23,7 +23,7 @@ type Visita struct {
 	Nuevo               bool           `json:"nuevo" gorm:"default:true"`
 	PublicadorID        uint           `json:"id_guardia"`
 	UsuarioID           uint           `json:"id_usuario"`
-	EtapaID             uint           `json:"id_etapa"`
+	ParroquiaID         uint           `json:"id_etapa"`
 	DiaCreacion         time.Time      `json:"dia_creacion"`
 	EntradaID           *uint          `json:"id_entrada"`
 	SalidaID            *uint          `json:"id_salida"`

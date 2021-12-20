@@ -33,7 +33,7 @@ type ReporteAlicuota struct {
 }
 
 func ReporteAlicuotas(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	dia := c.Query("dia")
 	mes := c.Query("mes")
 	año := c.Query("año")
@@ -67,7 +67,7 @@ func ReporteAlicuotas(c *gin.Context) {
 		}
 		fechaFin = fechaInicio.AddDate(1, 0, 0)
 	}
-	err = models.Db.Joins("Casa", "EtapaID = ?", idEtapa).Where("fecha_pago between ? and ?", fechaInicio, fechaFin, idEtapa).Order("created_at desc").Find(&alicuotas).Error
+	err = models.Db.Joins("Casa", "ParroquiaID = ?", idParroquia).Where("fecha_pago between ? and ?", fechaInicio, fechaFin, idParroquia).Order("created_at desc").Find(&alicuotas).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener alicuotas"), nil, c, http.StatusInternalServerError)
@@ -96,15 +96,15 @@ type RespuestaAlicuotas struct {
 }
 
 func GetAlicuotas(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	mz := c.Query("mz")
 	villa := c.Query("villa")
 	estado := c.Query("estado")
 
 	alicuotas := []*models.Alicuota{}
 	var err error
-	if idEtapa != 0 {
-		err = models.Db.Preload("Casa", models.Db.Where(&models.Casa{Manzana: mz, Villa: villa, EtapaID: idEtapa})).Where(&models.Alicuota{Estado: estado}).Order("created_at desc").Find(&alicuotas).Error
+	if idParroquia != 0 {
+		err = models.Db.Preload("Casa", models.Db.Where(&models.Casa{Manzana: mz, Villa: villa, ParroquiaID: idParroquia})).Where(&models.Alicuota{Estado: estado}).Order("created_at desc").Find(&alicuotas).Error
 		test := func(ali models.Alicuota) bool { return ali.Casa != nil }
 		alicuotas = filter(alicuotas, test)
 	} else {
@@ -236,9 +236,9 @@ func DeleteAlicuota(c *gin.Context) {
 
 func GetAlicuotaPorCasa(c *gin.Context) {
 	idCasa := c.Param("id")
-	idCasaResidente := c.GetInt("id_casa")
-	if idCasaResidente != 0 {
-		idCasa = fmt.Sprintf("%d", idCasaResidente)
+	idCasaFiel := c.GetInt("id_casa")
+	if idCasaFiel != 0 {
+		idCasa = fmt.Sprintf("%d", idCasaFiel)
 	}
 	fechaInicio := c.Query("fecha_inicio")
 	if fechaInicio == "" {
@@ -261,7 +261,7 @@ func GetAlicuotaPorCasa(c *gin.Context) {
 
 }
 
-type AlicuotasResidenteTemporal struct {
+type AlicuotasFielTemporal struct {
 	Estado         Estado         `json:"estado"`
 	Alicuotas      []*AlicuotaAno `json:"alicuotas"`
 	PagoHabilitado bool           `json:"pago_habilitado"`
@@ -278,59 +278,59 @@ type AlicuotaAno struct {
 	Alicuotas []*models.Alicuota `json:"alicuotas"`
 }
 
-type AlicuotasResidente struct {
+type AlicuotasFiel struct {
 	Estado    Estado             `json:"estado"`
 	Alicuotas []*models.Alicuota `json:"alicuotas"`
 }
 
-func GetAlicuotaPorResidente(c *gin.Context) {
-	idCasaResidente := c.GetInt("id_casa")
+func GetAlicuotaPorFiel(c *gin.Context) {
+	idCasaFiel := c.GetInt("id_casa")
 	alicuotas := []*models.Alicuota{}
-	err := models.Db.Order("fecha_pago ASC").Where("casa_id = ? ", idCasaResidente).Find(&alicuotas).Error
+	err := models.Db.Order("fecha_pago ASC").Where("casa_id = ? ", idCasaFiel).Find(&alicuotas).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener alicuotas"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	aliResidente := &AlicuotasResidente{}
-	aliResidente.Alicuotas = alicuotas
+	aliFiel := &AlicuotasFiel{}
+	aliFiel.Alicuotas = alicuotas
 	for _, ali := range alicuotas {
 		if ali.Estado == "PENDIENTE" {
-			aliResidente.Estado.Valor += ali.Valor
+			aliFiel.Estado.Valor += ali.Valor
 		}
 	}
 
-	aliResidente.Estado.Valor = math.Round(aliResidente.Estado.Valor*100) / 100
-	if aliResidente.Estado.Valor > 0 {
-		aliResidente.Estado.Pendientes = true
+	aliFiel.Estado.Valor = math.Round(aliFiel.Estado.Valor*100) / 100
+	if aliFiel.Estado.Valor > 0 {
+		aliFiel.Estado.Pendientes = true
 	}
-	utils.CrearRespuesta(err, aliResidente, c, http.StatusOK)
+	utils.CrearRespuesta(err, aliFiel, c, http.StatusOK)
 
 }
 
-func GetAlicuotaPorResidenteTemporal(c *gin.Context) {
-	idCasaResidente := c.GetInt("id_casa")
+func GetAlicuotaPorFielTemporal(c *gin.Context) {
+	idCasaFiel := c.GetInt("id_casa")
 	alicuotas := []*models.Alicuota{}
-	err := models.Db.Order("fecha_pago ASC").Where("casa_id = ? ", idCasaResidente).Find(&alicuotas).Error
+	err := models.Db.Order("fecha_pago ASC").Where("casa_id = ? ", idCasaFiel).Find(&alicuotas).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener alicuotas"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	etapa := &models.Etapa{}
-	err = models.Db.Find(&etapa, idEtapa).Error
+	err = models.Db.Find(&etapa, idParroquia).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener alicuotas"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	aliResidente := &AlicuotasResidenteTemporal{}
-	aliResidente.Alicuotas = []*AlicuotaAno{}
+	aliFiel := &AlicuotasFielTemporal{}
+	aliFiel.Alicuotas = []*AlicuotaAno{}
 	vencidos := false
 	for _, ali := range alicuotas {
 		if ali.Estado == "PENDIENTE" {
-			aliResidente.Estado.Valor += ali.Valor
+			aliFiel.Estado.Valor += ali.Valor
 			if time.Now().After(*ali.FechaPago) {
 				ali.Estado = "VENCIDO"
 				vencidos = true
@@ -339,24 +339,24 @@ func GetAlicuotaPorResidenteTemporal(c *gin.Context) {
 
 		ano := ali.FechaPago.Year()
 		flag := true
-		for _, aliAno := range aliResidente.Alicuotas {
+		for _, aliAno := range aliFiel.Alicuotas {
 			if aliAno.Ano == ano {
 				aliAno.Alicuotas = append(aliAno.Alicuotas, ali)
 				flag = false
 				break
 			}
 		}
-		aliResidente.Estado.Valor = math.Round(aliResidente.Estado.Valor*100) / 100
+		aliFiel.Estado.Valor = math.Round(aliFiel.Estado.Valor*100) / 100
 		if flag {
 			alIt := []*models.Alicuota{}
 			alIt = append(alIt, ali)
-			aliResidente.Alicuotas = append(aliResidente.Alicuotas, &AlicuotaAno{Ano: ano, Alicuotas: alIt})
+			aliFiel.Alicuotas = append(aliFiel.Alicuotas, &AlicuotaAno{Ano: ano, Alicuotas: alIt})
 		}
 	}
-	aliResidente.ExentoPago = c.GetInt("id_residente") == 34
-	aliResidente.Estado.Pendientes = vencidos
-	aliResidente.PagoHabilitado = etapa.PagosTarjeta
-	utils.CrearRespuesta(err, aliResidente, c, http.StatusOK)
+	aliFiel.ExentoPago = c.GetInt("id_residente") == 34
+	aliFiel.Estado.Pendientes = vencidos
+	aliFiel.PagoHabilitado = etapa.PagosTarjeta
+	utils.CrearRespuesta(err, aliFiel, c, http.StatusOK)
 
 }
 
@@ -410,9 +410,9 @@ func PagarAlicuota(c *gin.Context) {
 	}
 	pago.FechaPago = time.Now()
 	tx := models.Db.Begin()
-	idResidente := c.GetInt("id_residente")
-	idRes := fmt.Sprintf("%d", idResidente)
-	res := &models.Residente{}
+	idFiel := c.GetInt("id_residente")
+	idRes := fmt.Sprintf("%d", idFiel)
+	res := &models.Fiel{}
 	err = tx.Joins("Usuario").Find(res, idRes).Error
 	if err != nil {
 		tx.Rollback()
@@ -445,12 +445,12 @@ func PagarAlicuota(c *gin.Context) {
 			return
 		}
 	}
-	tarjeta := &models.ResidenteTarjeta{}
+	tarjeta := &models.FielTarjeta{}
 	err = tx.Where("token_tarjeta = ?", pago.TokenTarjeta).First(tarjeta).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			tarjeta.TokenTarjeta = pago.TokenTarjeta
-			tarjeta.ResidenteID = res.ID
+			tarjeta.FielID = res.ID
 			err = tx.Create(&tarjeta).Error
 			if err != nil {
 				tx.Rollback()
@@ -468,7 +468,7 @@ func PagarAlicuota(c *gin.Context) {
 		}
 	}
 
-	trans := &models.Transaccion{ResidenteTarjetaID: tarjeta.ID, Tipo: "ALI"}
+	trans := &models.Transaccion{FielTarjetaID: tarjeta.ID, Tipo: "ALI"}
 	err = tx.Create(trans).Error
 	if err != nil {
 		tx.Rollback()
@@ -485,7 +485,7 @@ func PagarAlicuota(c *gin.Context) {
 		return
 	}
 	montoReal := fmt.Sprintf("%f", cobro.Transaccion.Monto)
-	transNueva := &models.Transaccion{Estado: cobro.Transaccion.Status, DiaPago: cobro.Transaccion.FechaPago, Monto: montoReal, CodigoAutorizacion: cobro.Transaccion.CodigoAutorizacion, Mensaje: cobro.Transaccion.Mensaje, Descripcion: descripcion, ResidenteTarjetaID: tarjeta.ID}
+	transNueva := &models.Transaccion{Estado: cobro.Transaccion.Status, DiaPago: cobro.Transaccion.FechaPago, Monto: montoReal, CodigoAutorizacion: cobro.Transaccion.CodigoAutorizacion, Mensaje: cobro.Transaccion.Mensaje, Descripcion: descripcion, FielTarjetaID: tarjeta.ID}
 	err = tx.Where("id = ?", trans.ID).Updates(transNueva).Error
 	if err != nil {
 		_ = c.Error(err)

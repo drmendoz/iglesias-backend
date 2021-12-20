@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,8 +18,8 @@ import (
 
 func GetAdministradoresEtapa(c *gin.Context) {
 	administradores := []*models.AdminParroquia{}
-	idEtapa := c.GetInt("id_etapa")
-	err := models.Db.Where(&models.AdminParroquia{EtapaID: uint(idEtapa)}).Omit("usuario.Contrasena").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
+	idParroquia := c.GetInt("id_parroquia")
+	err := models.Db.Where(&models.AdminParroquia{ParroquiaID: uint(idParroquia)}).Omit("usuario.Contrasena").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener administadores"), nil, c, http.StatusInternalServerError)
@@ -33,9 +32,6 @@ func GetAdministradoresEtapa(c *gin.Context) {
 			adm.Usuario.Imagen = "https://api.practical.com.ec/public/pdf/" + adm.Usuario.Imagen
 		}
 		adm.Usuario.Contrasena = ""
-		if adm.Pdf != "" {
-			adm.Pdf = utils.SERVIMG + adm.Pdf
-		}
 
 	}
 	utils.CrearRespuesta(err, administradores, c, http.StatusOK)
@@ -43,14 +39,14 @@ func GetAdministradoresEtapa(c *gin.Context) {
 
 func CreateAdministradorEtapa(c *gin.Context) {
 
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	adm := &models.AdminParroquia{}
 	rol := c.GetString("rol")
 	isMaster := rol == "master"
 
 	err := c.ShouldBindJSON(adm)
-	if idEtapa != 0 {
-		adm.EtapaID = uint(idEtapa)
+	if idParroquia != 0 {
+		adm.ParroquiaID = uint(idParroquia)
 	}
 	if adm.Usuario.Usuario == "" {
 		utils.CrearRespuesta(errors.New("Por favor Ingrese usuario y/o Contrasena"), nil, c, http.StatusBadRequest)
@@ -71,24 +67,7 @@ func CreateAdministradorEtapa(c *gin.Context) {
 	err = models.Db.Where("Usuario.usuario = ?", adm.Usuario.Usuario).Joins("Usuario").First(&adComp).Error
 
 	if errors.Is(gorm.ErrRecordNotFound, err) {
-		if adm.Pdf != "" {
-			uri := strings.Split(adm.Pdf, ";")[0]
-			if uri == "data:application/pdf" {
-				nombre := fmt.Sprintf("admin-etapa-%d.pdf", time.Now().Unix())
-				base64 := strings.Split(adm.Pdf, ",")[1]
-				err = utils.SubirPdf(nombre, base64)
-				if err != nil {
-					_ = c.Error(err)
-					utils.CrearRespuesta(errors.New("Error al crear administrador"), nil, c, http.StatusInternalServerError)
-					return
-				}
-				adm.Pdf = nombre
-			} else {
-				adm.Pdf = ""
-			}
-		} else {
-			adm.Pdf = ""
-		}
+
 		adm.Usuario.Contrasena, _ = auth.GenerarCodigoTemporal(6)
 		clave := auth.HashPassword(adm.Usuario.Contrasena)
 		adm.ContraHash = adm.Usuario.Contrasena
@@ -147,24 +126,7 @@ func UpdateAdministradorEtapa(c *gin.Context) {
 
 		err = models.Db.Where("Usuario.usuario = ?", adm.Usuario.Usuario).Joins("Usuario").First(&adComp).Error
 	}
-	if adm.Pdf != "" {
-		uri := strings.Split(adm.Pdf, ";")[0]
-		if uri == "data:application/pdf" {
-			nombre := fmt.Sprintf("admin-etapa-%d.pdf", time.Now().Unix())
-			base64 := strings.Split(adm.Pdf, ",")[1]
-			err = utils.SubirPdf(nombre, base64)
-			if err != nil {
-				_ = c.Error(err)
-				utils.CrearRespuesta(errors.New("Error al crear administrador"), nil, c, http.StatusInternalServerError)
-				return
-			}
-			adm.Pdf = nombre
-		} else {
-			adm.Pdf = ""
-		}
-	} else {
-		adm.Pdf = ""
-	}
+
 	if adm.Usuario == nil || errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {
 		tx := models.Db.Begin()
 		err = tx.Omit("Usuario").Updates(adm).Error

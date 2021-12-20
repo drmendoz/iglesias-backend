@@ -17,8 +17,8 @@ import (
 func GetAreaSocials(c *gin.Context) {
 
 	etps := []*models.AreaSocial{}
-	idEtapa := c.GetInt("id_etapa")
-	err := models.Db.Where(&models.AreaSocial{EtapaID: uint(idEtapa)}).Order("created_at asc").Find(&etps).Error
+	idParroquia := c.GetInt("id_etapa")
+	err := models.Db.Where(&models.AreaSocial{ParroquiaID: uint(idParroquia)}).Order("created_at asc").Find(&etps).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener areas sociales"), nil, c, http.StatusInternalServerError)
@@ -58,7 +58,7 @@ func GetAreaSocialPorID(c *gin.Context) {
 	etp := &models.AreaSocial{}
 	id := c.Param("id")
 	err := models.Db.Preload("Horarios", "fecha_fin >= ?", time.Now()).Preload("Reservaciones", func(tx *gorm.DB) *gorm.DB {
-		return tx.Order("hora_inicio ASC").Joins("Residente").Joins("Residente.Usuario")
+		return tx.Order("hora_inicio ASC").Joins("Fiel").Joins("Fiel.Usuario")
 	}).First(etp, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -91,9 +91,9 @@ func GetAreaSocialPorId(c *gin.Context) {
 	fechaFin, _ := time.Parse("2006-01-02", fechaF)
 	err := models.Db.Preload("Horarios").Preload("Reservaciones", func(tx *gorm.DB) *gorm.DB {
 		if fechaI == "" && fechaF == "" {
-			return tx.Order("hora_inicio DESC").Joins("Residente").Preload("Residente.Usuario").Preload("Residente.Casa")
+			return tx.Order("hora_inicio DESC").Joins("Fiel").Preload("Fiel.Usuario").Preload("Fiel.Casa")
 		} else {
-			return tx.Where("hora_inicio between ? and ? and valor_cancelado > ?", fechaInicio, fechaFin, 0).Order("hora_inicio DESC").Joins("Residente").Preload("Residente.Usuario").Preload("Residente.Casa")
+			return tx.Where("hora_inicio between ? and ? and valor_cancelado > ?", fechaInicio, fechaFin, 0).Order("hora_inicio DESC").Joins("Fiel").Preload("Fiel.Usuario").Preload("Fiel.Casa")
 		}
 	}).First(etp, id).Error
 	if err != nil {
@@ -138,14 +138,14 @@ func GetAreaSocialPorId(c *gin.Context) {
 }
 
 func CreateAreaSocial(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	etp := &models.AreaSocial{}
 	err := c.ShouldBindJSON(etp)
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-	etp.EtapaID = idEtapa
+	etp.ParroquiaID = idParroquia
 
 	if etp.Imagen != "" {
 		idUrb := fmt.Sprintf("%d", etp.ID)

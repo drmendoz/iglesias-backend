@@ -18,12 +18,12 @@ func GetPublicidads(c *gin.Context) {
 	publicidads := []*models.Publicidad{}
 	var err error
 
-	idEtapa := c.GetInt("id_etapa")
-	if idEtapa == 0 {
-		idEtapa, _ = strconv.Atoi(c.Query("id_etapa"))
+	idParroquia := c.GetInt("id_etapa")
+	if idParroquia == 0 {
+		idParroquia, _ = strconv.Atoi(c.Query("id_etapa"))
 	}
 
-	err = models.Db.Order("prioridad ASC").Where(&models.Publicidad{EtapaID: uint(idEtapa)}).Find(&publicidads).Error
+	err = models.Db.Order("prioridad ASC").Where(&models.Publicidad{ParroquiaID: uint(idParroquia)}).Find(&publicidads).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener publicidads"), nil, c, http.StatusInternalServerError)

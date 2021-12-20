@@ -21,7 +21,7 @@ type Autorizacion struct {
 	CasaID       uint        `json:"id_casa"`
 	PublicadorID uint        `json:"id_guardia"`
 	UsuarioID    uint        `json:"id_usuario"`
-	EtapaID      uint        `json:"id_etapa"`
+	ParroquiaID  uint        `json:"id_etapa"`
 	AutorizadoID *uint       `json:"id_autorizado"`
 	Casa         *Casa       `json:"casa,omitempty"`
 	Etapa        *Etapa      `json:"etapa,omitempty"`

@@ -14,11 +14,11 @@ import (
 )
 
 func GetImagenGalerias(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	imagens := []*models.ImagenGaleria{}
 	var err error
-	if idEtapa != 0 {
-		err = models.Db.Where("etapa_id = ?", idEtapa).Order("created_at desc").Find(&imagens).Error
+	if idParroquia != 0 {
+		err = models.Db.Where("etapa_id = ?", idParroquia).Order("created_at desc").Find(&imagens).Error
 	} else {
 		err = models.Db.Find(&imagens).Error
 	}
@@ -67,8 +67,8 @@ func CreateImagenGaleria(c *gin.Context) {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-	idEtapa := uint(c.GetInt("id_etapa"))
-	imagen.EtapaID = idEtapa
+	idParroquia := uint(c.GetInt("id_etapa"))
+	imagen.ParroquiaID = idParroquia
 	tx := models.Db.Begin()
 	err = tx.Omit("imagen").Create(imagen).Error
 	if err != nil {

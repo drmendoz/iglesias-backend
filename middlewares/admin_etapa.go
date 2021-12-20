@@ -13,19 +13,18 @@ func ParsingTokenAdminParroquia() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := c.GetInt("id_usuario")
 		adm := &models.AdminParroquia{}
-		res := models.Db.Where("Usuario.id = ? ", user).Joins("Usuario").Joins("Etapa").First(adm)
+		res := models.Db.Where("Usuario.id = ? ", user).Joins("Usuario").Joins("Parroquia").First(adm)
 		if res.Error != nil {
 			utils.CrearRespuesta(errors.New("Error de autorizacion"), nil, c, http.StatusInternalServerError)
 			c.Abort()
 			return
 		}
-		if adm.Etapa == nil {
-			utils.CrearRespuesta(errors.New("Su etapa ya no existe"), nil, c, http.StatusUnauthorized)
+		if adm.Parroquia == nil {
+			utils.CrearRespuesta(errors.New("Su parroquia ya no existe"), nil, c, http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
-		print(adm.EtapaID)
-		c.Set("id_etapa", int(adm.EtapaID))
+		c.Set("id_parroquia", int(adm.ParroquiaID))
 		c.Next()
 	}
 }

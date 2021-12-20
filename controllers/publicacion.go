@@ -19,9 +19,9 @@ import (
 func GetPublicacions(c *gin.Context) {
 	publicacions := []*models.Publicacion{}
 	var err error
-	idEtapa := c.GetInt("id_etapa")
-	if idEtapa != 0 {
-		err = models.Db.Order("created_at desc").Where("publicacion.etapa_id = ?", idEtapa).Joins("Usuario").Joins("Etapa").Preload("ImagenesPublicacion").Find(&publicacions).Error
+	idParroquia := c.GetInt("id_etapa")
+	if idParroquia != 0 {
+		err = models.Db.Order("created_at desc").Where("publicacion.etapa_id = ?", idParroquia).Joins("Usuario").Joins("Etapa").Preload("ImagenesPublicacion").Find(&publicacions).Error
 	} else {
 		err = models.Db.Find(&publicacions).Error
 	}
@@ -101,10 +101,10 @@ type MediaPublicacion struct {
 func CreatePublicacionMedia(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
 
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	publicacion := &models.Publicacion{}
 	publicacion.UsuarioID = uint(idUsuario)
-	publicacion.EtapaID = idEtapa
+	publicacion.ParroquiaID = idParroquia
 	// }
 	form, _ := c.MultipartForm()
 	var err error
@@ -181,8 +181,8 @@ func CreatePublicacionMedia(c *gin.Context) {
 	}
 
 	//Notificar emprendimientos
-	residentes := []*models.Residente{}
-	err = models.Db.Where("Casa.etapa_id = ?", publicacion.EtapaID).Joins("Casa").Find(&residentes).Error
+	residentes := []*models.Fiel{}
+	err = models.Db.Where("Casa.etapa_id = ?", publicacion.ParroquiaID).Joins("Casa").Find(&residentes).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(err, "Error al crear publicacion", c, http.StatusInternalServerError)
@@ -200,11 +200,11 @@ func CreatePublicacionMedia(c *gin.Context) {
 
 func CreatePublicacion(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	publicacion := &models.Publicacion{}
 	err := c.ShouldBindJSON(publicacion)
 	publicacion.UsuarioID = uint(idUsuario)
-	publicacion.EtapaID = idEtapa
+	publicacion.ParroquiaID = idParroquia
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
@@ -229,8 +229,8 @@ func CreatePublicacion(c *gin.Context) {
 		return
 	}
 	//Notificar emprendimientos
-	residentes := []*models.Residente{}
-	err = models.Db.Where("Casa.etapa_id = ?", publicacion.EtapaID).Joins("Casa").Find(&residentes).Error
+	residentes := []*models.Fiel{}
+	err = models.Db.Where("Casa.etapa_id = ?", publicacion.ParroquiaID).Joins("Casa").Find(&residentes).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(err, "Error al crear publicacion", c, http.StatusInternalServerError)

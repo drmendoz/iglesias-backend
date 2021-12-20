@@ -57,7 +57,7 @@ func AuthMiddleWare() gin.HandlerFunc {
 			return
 		}
 		c.Set("id_usuario", claims.Id)
-		if claims.Rol == "residente" {
+		if claims.Rol == "fiel" {
 
 			c.Set("token_random", claims.TokenRandom)
 		}

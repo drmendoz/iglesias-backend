@@ -18,7 +18,7 @@ type Autorizado struct {
 	TipoUsuario    string          `json:"tipo_usuario" gorm:"default:'VISITA'; gorm:type:enum('RESIDENTE','EMPLEADO','EXPRESO', 'FAMILIAR')"`
 	Pdf            string          `json:"pdf"`
 	PublicadorID   uint            `json:"id_publicador"`
-	EtapaID        uint            `json:"id_etapa"`
+	ParroquiaID    uint            `json:"id_etapa"`
 	Autorizaciones []*Autorizacion `json:"autorizaciones"`
 	Etapa          *Etapa          `json:"etapa,omitempty"`
 	Publicador     *Usuario        `json:"publicador,omitempty"`

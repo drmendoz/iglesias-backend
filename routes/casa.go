@@ -12,6 +12,6 @@ func casaRoutes(r *gin.RouterGroup) {
 	admin.PUT("/:id", controllers.UpdateCasa)
 	admin.GET("/:id", controllers.GetCasaPorId)
 	admin.DELETE("/:id", controllers.DeleteCasa)
-	admin.GET("/:id/residentes", controllers.GetResidentesPorCasa)
+	admin.GET("/:id/residentes", controllers.GetFielsPorCasa)
 	admin.GET("/:id/alicuotas", controllers.GetAlicuotaPorCasa)
 }

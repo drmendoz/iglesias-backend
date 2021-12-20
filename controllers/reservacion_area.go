@@ -91,10 +91,10 @@ func DeleteReservacionAreaSocial(c *gin.Context) {
 	utils.CrearRespuesta(nil, "ReservacionAreaSocial eliminada exitosamente", c, http.StatusOK)
 }
 
-func GetReservacionesResidenteAreaSocial(c *gin.Context) {
-	idResidente := c.GetInt("id_residente")
+func GetReservacionesFielAreaSocial(c *gin.Context) {
+	idFiel := c.GetInt("id_residente")
 	reservas := []*models.ReservacionAreaSocial{}
-	err := models.Db.Order("created_at DESC").Where("residente_id = ?", idResidente).Joins("AreaSocial").Find(&reservas).Error
+	err := models.Db.Order("created_at DESC").Where("residente_id = ?", idFiel).Joins("AreaSocial").Find(&reservas).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener reservas"), nil, c, http.StatusInternalServerError)
@@ -121,9 +121,9 @@ type PagoReserva struct {
 	TokenTarjeta string     `json:"token_tarjeta"`
 }
 
-func CreateReservaResidente(c *gin.Context) {
+func CreateReservaFiel(c *gin.Context) {
 	pago := &PagoReserva{}
-	idResidente := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_residente")
 	idArea := c.Param("id")
 	err := c.ShouldBindJSON(pago)
 	areaId, err := strconv.Atoi(idArea)
@@ -132,19 +132,19 @@ func CreateReservaResidente(c *gin.Context) {
 		return
 	}
 	tx := models.Db.Begin()
-	res := &models.Residente{}
-	err = tx.Joins("Usuario").Find(res, idResidente).Error
+	res := &models.Fiel{}
+	err = tx.Joins("Usuario").Find(res, idFiel).Error
 	if err != nil {
 		tx.Rollback()
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	idRes := fmt.Sprintf("%d", idResidente)
+	idRes := fmt.Sprintf("%d", idFiel)
 	reserva := &models.ReservacionAreaSocial{}
 	reserva.HoraInicio = *pago.HoraInicio
 	reserva.HoraFin = *pago.HoraFin
-	reserva.ResidenteID = uint(idResidente)
+	reserva.FielID = uint(idFiel)
 	reserva.AreaSocialID = uint(areaId)
 	area := &models.AreaSocial{}
 	err = tx.First(area, areaId).Error
@@ -162,14 +162,14 @@ func CreateReservaResidente(c *gin.Context) {
 	var result int64
 	inicioMes := time.Date(reserva.HoraInicio.Year(), reserva.HoraInicio.Month(), 1, 0, 0, 0, 0, tiempo.Local)
 	finMes := time.Date(reserva.HoraInicio.Year(), reserva.HoraInicio.Month(), 30, 0, 0, 0, 0, tiempo.Local)
-	err = tx.Model(&models.ReservacionAreaSocial{}).Where("hora_inicio between ? and ?", inicioMes, finMes).Where("residente_id = ?", idResidente).Where("area_social_id = ?", areaId).Count(&result).Error
+	err = tx.Model(&models.ReservacionAreaSocial{}).Where("hora_inicio between ? and ?", inicioMes, finMes).Where("residente_id = ?", idFiel).Where("area_social_id = ?", areaId).Count(&result).Error
 	if err != nil {
 		tx.Rollback()
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al crear reservacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	if result >= int64(area.ReservasResidenteMes) {
+	if result >= int64(area.ReservasFielMes) {
 		tx.Rollback()
 		utils.CrearRespuesta(errors.New("Ha excedido el numero de reservas de esta area social en este mes"), nil, c, http.StatusForbidden)
 		return
@@ -182,12 +182,12 @@ func CreateReservaResidente(c *gin.Context) {
 		return
 	}
 	if area.Precio > 0 {
-		tarjeta := &models.ResidenteTarjeta{}
+		tarjeta := &models.FielTarjeta{}
 		err = tx.Where("token_tarjeta = ?", pago.TokenTarjeta).First(tarjeta).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				tarjeta.TokenTarjeta = pago.TokenTarjeta
-				tarjeta.ResidenteID = uint(idResidente)
+				tarjeta.FielID = uint(idFiel)
 				err = tx.Create(&tarjeta).Error
 				if err != nil {
 					tx.Rollback()
@@ -204,7 +204,7 @@ func CreateReservaResidente(c *gin.Context) {
 
 			}
 		}
-		trans := &models.Transaccion{ResidenteTarjetaID: tarjeta.ID, Tipo: "RES"}
+		trans := &models.Transaccion{FielTarjetaID: tarjeta.ID, Tipo: "RES"}
 		err = tx.Create(trans).Error
 		if err != nil {
 			tx.Rollback()
@@ -222,7 +222,7 @@ func CreateReservaResidente(c *gin.Context) {
 			return
 		}
 		montoReal := fmt.Sprintf("%f", cobro.Transaccion.Monto)
-		transNueva := &models.Transaccion{Estado: cobro.Transaccion.Status, DiaPago: cobro.Transaccion.FechaPago, Monto: montoReal, CodigoAutorizacion: cobro.Transaccion.CodigoAutorizacion, Mensaje: cobro.Transaccion.Mensaje, Descripcion: descripcion, ResidenteTarjetaID: tarjeta.ID}
+		transNueva := &models.Transaccion{Estado: cobro.Transaccion.Status, DiaPago: cobro.Transaccion.FechaPago, Monto: montoReal, CodigoAutorizacion: cobro.Transaccion.CodigoAutorizacion, Mensaje: cobro.Transaccion.Mensaje, Descripcion: descripcion, FielTarjetaID: tarjeta.ID}
 		err = tx.Where("id = ?", trans.ID).Updates(transNueva).Error
 		if err != nil {
 			_ = c.Error(err)
@@ -239,8 +239,8 @@ func CreateReservaResidente(c *gin.Context) {
 	}
 	tx.Commit()
 	idCasa := c.GetInt("id_casa")
-	idEtapa := c.GetInt("id_etapa")
-	visualizaciones, _ := obtenerNotificaciones(idResidente, idCasa, idEtapa)
+	idParroquia := c.GetInt("id_etapa")
+	visualizaciones, _ := obtenerNotificaciones(idFiel, idCasa, idParroquia)
 
 	utils.CrearRespuesta(nil, &VisuMensajes{Notificaciones: visualizaciones, Mensaje: "Reservación creada exitosamente"}, c, http.StatusCreated)
 

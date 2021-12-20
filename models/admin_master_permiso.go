@@ -14,7 +14,7 @@ type AdminMasterPermiso struct {
 	Categoria     bool         `json:"categoria" gorm:"default:false"`
 	Publicidad    bool         `json:"publicidad" gorm:"default:false"`
 	Facturacion   bool         `json:"facturacion" gorm:"default:false"`
-	Residente     bool         `json:"residente" gorm:"default:false"`
+	Fiel          bool         `json:"residente" gorm:"default:false"`
 	Usuario       bool         `json:"usuario" gorm:"default:false"`
 }
 

@@ -22,11 +22,11 @@ type Notificaciones struct {
 	Reserva         int `json:"reserva"`
 }
 
-func obtenerNotificaciones(idResidente int, idCasa int, idEtapa int) (*Notificaciones, error) {
+func obtenerNotificaciones(idFiel int, idCasa int, idParroquia int) (*Notificaciones, error) {
 
 	notificacion := &Notificaciones{}
-	residente := &models.Residente{}
-	err := models.Db.Select("visualizacion_emprendimiento", "visualizacion_galeria", "visualizacion_bitacora", "visualizacion_buzon", "visualizacion_camara", "visualizacion_administradores", "visualizacion_alicuota", "visualizacion_area_social", "visualizacion_votacion", "visualizacion_reservas").First(residente, idResidente).Error
+	residente := &models.Fiel{}
+	err := models.Db.Select("visualizacion_emprendimiento", "visualizacion_galeria", "visualizacion_bitacora", "visualizacion_buzon", "visualizacion_camara", "visualizacion_administradores", "visualizacion_alicuota", "visualizacion_area_social", "visualizacion_votacion", "visualizacion_reservas").First(residente, idFiel).Error
 
 	if err != nil {
 		return nil, err
@@ -49,19 +49,19 @@ func obtenerNotificaciones(idResidente int, idCasa int, idEtapa int) (*Notificac
 	if err != nil {
 		return nil, err
 	}
-	err = models.Db.Model(&models.Publicacion{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionBuzon, idEtapa).Count(&countBuzon).Error
+	err = models.Db.Model(&models.Publicacion{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionBuzon, idParroquia).Count(&countBuzon).Error
 	if err != nil {
 		return nil, err
 	}
-	err = models.Db.Model(&models.ImagenGaleria{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionGaleria, idEtapa).Count(&countGaleria).Error
+	err = models.Db.Model(&models.ImagenGaleria{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionGaleria, idParroquia).Count(&countGaleria).Error
 	if err != nil {
 		return nil, err
 	}
-	err = models.Db.Model(&models.Votacion{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionVotacion, idEtapa).Count(&countVotacion).Error
+	err = models.Db.Model(&models.Votacion{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionVotacion, idParroquia).Count(&countVotacion).Error
 	if err != nil {
 		return nil, err
 	}
-	err = models.Db.Model(&models.EtapaCamara{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionCamara, idEtapa).Count(&countCamara).Error
+	err = models.Db.Model(&models.EtapaCamara{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionCamara, idParroquia).Count(&countCamara).Error
 	if err != nil {
 		return nil, err
 	}
@@ -69,15 +69,15 @@ func obtenerNotificaciones(idResidente int, idCasa int, idEtapa int) (*Notificac
 	if err != nil {
 		return nil, err
 	}
-	err = models.Db.Model(&models.AreaSocial{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionAreaSocial, idEtapa).Count(&countAreaSocial).Error
+	err = models.Db.Model(&models.AreaSocial{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionAreaSocial, idParroquia).Count(&countAreaSocial).Error
 	if err != nil {
 		return nil, err
 	}
-	err = models.Db.Model(&models.Administrativo{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionAdministradores, idEtapa).Count(&countAdministradores).Error
+	err = models.Db.Model(&models.Administrativo{}).Where("created_at > ? and etapa_id = ?", residente.VisualizacionAdministradores, idParroquia).Count(&countAdministradores).Error
 	if err != nil {
 		return nil, err
 	}
-	err = models.Db.Model(&models.ReservacionAreaSocial{}).Where("created_at > ? and residente_id = ?", residente.VisualizacionReservas, idResidente).Count(&countReservas).Error
+	err = models.Db.Model(&models.ReservacionAreaSocial{}).Where("created_at > ? and residente_id = ?", residente.VisualizacionReservas, idFiel).Count(&countReservas).Error
 	if err != nil {
 		return nil, err
 	}
@@ -95,10 +95,10 @@ func obtenerNotificaciones(idResidente int, idCasa int, idEtapa int) (*Notificac
 }
 
 func GetNotificacionesRequest(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
-	idResidente := c.GetInt("id_residente")
+	idParroquia := c.GetInt("id_etapa")
+	idFiel := c.GetInt("id_residente")
 	idCasa := c.GetInt("id_casa")
-	notificaciones, err := obtenerNotificaciones(idResidente, idCasa, idEtapa)
+	notificaciones, err := obtenerNotificaciones(idFiel, idCasa, idParroquia)
 	if err != nil {
 		utils.CrearRespuesta(errors.New("Error al obtener notificaciones"), nil, c, http.StatusInternalServerError)
 		return

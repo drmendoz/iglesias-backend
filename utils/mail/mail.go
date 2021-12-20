@@ -44,7 +44,7 @@ func EnviarCorreoRecover(usuario models.Usuario) error {
 	return err
 }
 
-func EnviarCambioContrasena(usuario models.Residente) error {
+func EnviarCambioContrasena(usuario models.Fiel) error {
 	r := NewRequest([]string{usuario.Usuario.Correo}, "Practical App: Cambio de contrasena obligatorio", "Cambio de contrasena!")
 	err := r.ParseTemplate("views/cambio.html", usuario)
 	if err != nil {

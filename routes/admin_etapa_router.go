@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func administradorEtapaRouter(r *gin.RouterGroup) {
+func administradorParroquiaRouter(r *gin.RouterGroup) {
 	admin := r.Group("admin-etapa")
-	admin.Use(middlewares.RolEtapaAdminMiddleware())
+	admin.Use(middlewares.RolParroquiaAdminMiddleware())
 	admin.Use(middlewares.AuthMiddleWare())
 	admin.Use(middlewares.ParsingTokenAdminParroquia())
 	administradorEtapaRoutes(admin)

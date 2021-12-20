@@ -16,9 +16,9 @@ import (
 func GetAdministrativos(c *gin.Context) {
 	administrativos := []*models.Administrativo{}
 	var err error
-	idEtapa := c.GetInt("id_etapa")
-	if idEtapa != 0 {
-		err = models.Db.Where("etapa_id = ?", idEtapa).Find(&administrativos).Error
+	idParroquia := c.GetInt("id_etapa")
+	if idParroquia != 0 {
+		err = models.Db.Where("etapa_id = ?", idParroquia).Find(&administrativos).Error
 	} else {
 		err = models.Db.Find(&administrativos).Error
 	}
@@ -60,14 +60,14 @@ func GetAdministrativoPorId(c *gin.Context) {
 }
 
 func CreateAdministrativo(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	administrativo := &models.Administrativo{}
 	err := c.ShouldBindJSON(administrativo)
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-	administrativo.EtapaID = idEtapa
+	administrativo.ParroquiaID = idParroquia
 	tx := models.Db.Begin()
 	err = tx.Omit("imagen").Create(administrativo).Error
 	if err != nil {

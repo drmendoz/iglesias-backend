@@ -13,7 +13,7 @@ import (
 )
 
 func CrearSuscripcion(c *gin.Context) {
-	idResidente := uint(c.GetInt("id_residente"))
+	idFiel := uint(c.GetInt("id_residente"))
 	suscripcion := &models.Suscripcion{}
 	var err error
 	// err = c.ShouldBindJSON(suscripcion)
@@ -24,7 +24,7 @@ func CrearSuscripcion(c *gin.Context) {
 	// }
 	suscripcion.FechaInicio = time.Now().In(tiempo.Local)
 	suscripcion.FechaFin = suscripcion.FechaInicio.AddDate(0, 1, 0)
-	suscripcion.ResidenteID = idResidente
+	suscripcion.FielID = idFiel
 	suscripcion.Continua = true
 
 	// Validar Pago de suscripcion
@@ -40,8 +40,8 @@ func CrearSuscripcion(c *gin.Context) {
 }
 
 func AnularSuscripcion(c *gin.Context) {
-	idResidente := uint(c.GetInt("id_residente"))
-	err := models.Db.Where("residente_id = ?", idResidente).Updates(&models.Suscripcion{Continua: false}).Error
+	idFiel := uint(c.GetInt("id_residente"))
+	err := models.Db.Where("residente_id = ?", idFiel).Updates(&models.Suscripcion{Continua: false}).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al anular suscripcion"), nil, c, http.StatusInternalServerError)
@@ -65,7 +65,7 @@ func RenovarSuscripciones(c *gin.Context) {
 	for _, sus := range susPorVencer {
 		//Falta funcion de cobrar aqui
 		fechaFin := sus.FechaFin.AddDate(0, 1, 0)
-		err = models.Db.Create(&models.Suscripcion{FechaInicio: sus.FechaFin, FechaFin: fechaFin, Continua: true, ResidenteID: sus.ResidenteID}).Error
+		err = models.Db.Create(&models.Suscripcion{FechaInicio: sus.FechaFin, FechaFin: fechaFin, Continua: true, FielID: sus.FielID}).Error
 		if err != nil {
 			_ = c.Error(err)
 			errLog := fmt.Sprintf("Error al renovar suscripcion %d", sus.ID)
@@ -82,9 +82,9 @@ type SuscripcionResponse struct {
 	EmprendimientosActivos int64 `json:"emprendimientos_activos"`
 }
 
-func VerificarSuscripcionResidente(c *gin.Context) {
-	idResidente := uint(c.GetInt("id_residente"))
-	//suscrito, err := verificarSuscripcion(idResidente)
+func VerificarSuscripcionFiel(c *gin.Context) {
+	idFiel := uint(c.GetInt("id_residente"))
+	//suscrito, err := verificarSuscripcion(idFiel)
 	// if err != nil {
 	// 	_ = c.Error(err)
 	// 	utils.CrearRespuesta(errors.New("Error al verificar suscripcion"), nil, c, http.StatusInternalServerError)
@@ -92,7 +92,7 @@ func VerificarSuscripcionResidente(c *gin.Context) {
 	// }
 	fechaActual := time.Now().In(tiempo.Local)
 	var numEmp int64
-	err := models.Db.Model(&models.Emprendimiento{}).Where("fecha_publicacion < ?", fechaActual).Where("fecha_vencimiento > ?", fechaActual).Where("residente_id = ?", idResidente).Count(&numEmp).Error
+	err := models.Db.Model(&models.Emprendimiento{}).Where("fecha_publicacion < ?", fechaActual).Where("fecha_vencimiento > ?", fechaActual).Where("residente_id = ?", idFiel).Count(&numEmp).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener publicacion"), nil, c, http.StatusInternalServerError)
@@ -102,10 +102,10 @@ func VerificarSuscripcionResidente(c *gin.Context) {
 	utils.CrearRespuesta(nil, suscripcion, c, http.StatusOK)
 }
 
-func verificarSuscripcion(idResidente uint) (bool, error) {
+func verificarSuscripcion(idFiel uint) (bool, error) {
 	fechaActual := time.Now().In(tiempo.Local)
 	var count int64
-	err := models.Db.Model(&models.Suscripcion{}).Where("fecha_inicio < ?", fechaActual).Where("fecha_fin > ?", fechaActual).Where("residente_id = ?", idResidente).Count(&count).Error
+	err := models.Db.Model(&models.Suscripcion{}).Where("fecha_inicio < ?", fechaActual).Where("fecha_fin > ?", fechaActual).Where("residente_id = ?", idFiel).Count(&count).Error
 
 	suscrito := true
 	if count == 0 {
@@ -114,6 +114,6 @@ func verificarSuscripcion(idResidente uint) (bool, error) {
 	return suscrito, err
 }
 
-func ObtenerSuscripcionesResidente(c *gin.Context) {
+func ObtenerSuscripcionesFiel(c *gin.Context) {
 
 }

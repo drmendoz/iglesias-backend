@@ -93,12 +93,12 @@ func GetAutorizaciones(c *gin.Context) {
 }
 
 func ValidarAutorizacion(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	pin := c.Query("pin")
 
 	autorizacion := &models.Autorizacion{}
 
-	err := models.Db.Where(&models.Autorizacion{EtapaID: idEtapa, Estado: "PENDIENTE", Pin: pin}).Joins("Casa").First(&autorizacion).Error
+	err := models.Db.Where(&models.Autorizacion{ParroquiaID: idParroquia, Estado: "PENDIENTE", Pin: pin}).Joins("Casa").First(&autorizacion).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Autorización no encontrada"), nil, c, http.StatusNotFound)
@@ -140,9 +140,9 @@ type Respuesta struct {
 
 func CreateAutorizacion(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	idCasa := c.GetInt("id_casa")
-	if idUsuario == 0 || idEtapa == 0 {
+	if idUsuario == 0 || idParroquia == 0 {
 		utils.CrearRespuesta(errors.New("Error al crear autorizacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
@@ -154,7 +154,7 @@ func CreateAutorizacion(c *gin.Context) {
 	}
 
 	autorizacion.PublicadorID = uint(idUsuario)
-	autorizacion.EtapaID = uint(idEtapa)
+	autorizacion.ParroquiaID = uint(idParroquia)
 	autorizacion.CasaID = uint(idCasa)
 	tx := models.Db.Begin()
 	if err != nil {

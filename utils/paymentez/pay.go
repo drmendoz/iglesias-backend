@@ -60,8 +60,8 @@ func generateAuthToken() string {
 	print(token)
 	return token
 }
-func GetTarjetas(idResidente int64) (interface{}, error) {
-	url := fmt.Sprintf("https://ccapi-stg.paymentez.com/v2/card/list?uid=%d", idResidente)
+func GetTarjetas(idFiel int64) (interface{}, error) {
+	url := fmt.Sprintf("https://ccapi-stg.paymentez.com/v2/card/list?uid=%d", idFiel)
 	client := &http.Client{}
 	authToken := generateAuthToken()
 	req, _ := http.NewRequest("GET", url, nil)
@@ -82,11 +82,11 @@ func GetTarjetas(idResidente int64) (interface{}, error) {
 
 }
 
-func DeleteTarjeta(idResidente int, tokenTarjeta string) (interface{}, error) {
+func DeleteTarjeta(idFiel int, tokenTarjeta string) (interface{}, error) {
 	url := "https://ccapi-stg.paymentez.com/v2/card/delete/"
 	client := &http.Client{}
 	authToken := generateAuthToken()
-	id := fmt.Sprintf("%d", idResidente)
+	id := fmt.Sprintf("%d", idFiel)
 	body := &DeleteCardRequest{Tarjeta: CardToken{Token: tokenTarjeta}, User: Usuario{Id: id}}
 	jsonBody, _ := json.Marshal(body)
 	bodyBytes := bytes.NewBuffer(jsonBody)
@@ -171,11 +171,11 @@ func CobrarTarjeta(idUsuario string, correo string, totalCompra float64, descrip
 
 }
 
-func AnadirTarjeta(idResidente int, tokenTarjeta string) (interface{}, error) {
+func AnadirTarjeta(idFiel int, tokenTarjeta string) (interface{}, error) {
 	url := "https://ccapi-stg.paymentez.com/v2/card/delete/"
 	client := &http.Client{}
 	authToken := generateAuthToken()
-	id := fmt.Sprintf("%d", idResidente)
+	id := fmt.Sprintf("%d", idFiel)
 	body := &DeleteCardRequest{Tarjeta: CardToken{Token: tokenTarjeta}, User: Usuario{Id: id}}
 	jsonBody, _ := json.Marshal(body)
 	bodyBytes := bytes.NewBuffer(jsonBody)

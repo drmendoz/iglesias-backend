@@ -9,23 +9,16 @@ func RolMasterMiddleware() gin.HandlerFunc {
 	}
 }
 
-func RolEtapaAdminMiddleware() gin.HandlerFunc {
+func RolParroquiaAdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set("rol", "admin-etapa")
+		c.Set("rol", "admin-parroquia")
 		c.Next()
 	}
 }
 
-func RolGaritaAdminMiddleware() gin.HandlerFunc {
+func RolFielMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set("rol", "admin-garita")
-		c.Next()
-	}
-}
-
-func RolResidenteMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("rol", "residente")
+		c.Set("rol", "fiel")
 		c.Next()
 	}
 }

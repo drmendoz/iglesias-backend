@@ -18,10 +18,10 @@ import (
 
 func GetAdministradoresGarita(c *gin.Context) {
 	administradores := []*models.AdminGarita{}
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	var err error
-	if idEtapa != 0 {
-		err = models.Db.Omit("usuarios.Contrasena").Where("etapa_id = ?", idEtapa).Joins("Usuario").Find(&administradores).Error
+	if idParroquia != 0 {
+		err = models.Db.Omit("usuarios.Contrasena").Where("etapa_id = ?", idParroquia).Joins("Usuario").Find(&administradores).Error
 	} else {
 
 		err = models.Db.Omit("usuarios.Contrasena").Joins("Usuario").Find(&administradores).Error
@@ -46,14 +46,14 @@ func GetAdministradoresGarita(c *gin.Context) {
 }
 
 func CreateAdministradorGarita(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	adm := &models.AdminGarita{}
 	err := c.ShouldBindJSON(adm)
 	if adm.Usuario.Usuario == "" {
 		utils.CrearRespuesta(errors.New("Por favor Ingrese usuario y/o Contrasena"), nil, c, http.StatusBadRequest)
 		return
 	}
-	adm.EtapaID = idEtapa
+	adm.ParroquiaID = idParroquia
 	if err != nil || adm.Usuario.Usuario == "" {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return

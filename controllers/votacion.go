@@ -17,12 +17,12 @@ import (
 )
 
 func GetVotacions(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
-	idResidente := c.GetInt("id_residente")
+	idParroquia := c.GetInt("id_etapa")
+	idFiel := c.GetInt("id_residente")
 	votacions := []*models.Votacion{}
 	var err error
-	if idEtapa != 0 {
-		err = models.Db.Order("created_at DESC").Where("etapa_id = ?", idEtapa).Preload("Opciones", func(db *gorm.DB) *gorm.DB {
+	if idParroquia != 0 {
+		err = models.Db.Order("created_at DESC").Where("etapa_id = ?", idParroquia).Preload("Opciones", func(db *gorm.DB) *gorm.DB {
 			return db.Order("opcion_votacion.conteo DESC")
 		}).Find(&votacions).Error
 	} else {
@@ -36,9 +36,9 @@ func GetVotacions(c *gin.Context) {
 	}
 	for _, vot := range votacions {
 		voto := false
-		if idResidente != 0 {
+		if idFiel != 0 {
 			res := &models.RespuestaVotacion{}
-			err = models.Db.Where("residente_id = ? and OpcionVotacion.votacion_id = ? ", idResidente, vot.ID).Joins("OpcionVotacion").First(res).Error
+			err = models.Db.Where("residente_id = ? and OpcionVotacion.votacion_id = ? ", idFiel, vot.ID).Joins("OpcionVotacion").First(res).Error
 			if err != nil {
 				if !errors.Is(err, gorm.ErrRecordNotFound) {
 					_ = c.Error(err)
@@ -121,8 +121,8 @@ func GetVotacionPorId(c *gin.Context) {
 }
 
 func CreateVotacion(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
-	if idEtapa == 0 {
+	idParroquia := c.GetInt("id_etapa")
+	if idParroquia == 0 {
 		utils.CrearRespuesta(errors.New("No existe el id_etapa"), nil, c, http.StatusOK)
 		return
 	}
@@ -134,7 +134,7 @@ func CreateVotacion(c *gin.Context) {
 		return
 	}
 	tx := models.Db.Begin()
-	votacion.EtapaID = uint(idEtapa)
+	votacion.ParroquiaID = uint(idParroquia)
 
 	if !votacion.FechaVencimiento.IsZero() {
 		rounded := time.Date(votacion.FechaVencimiento.Year(), votacion.FechaVencimiento.Month(), votacion.FechaVencimiento.Day(), 0, 0, 0, 0, time.Local)
@@ -143,7 +143,7 @@ func CreateVotacion(c *gin.Context) {
 
 	imagenesArr := votacion.ImagenesArray
 	if len(imagenesArr) > 0 {
-		idUrb := fmt.Sprintf("%d", votacion.EtapaID)
+		idUrb := fmt.Sprintf("%d", votacion.ParroquiaID)
 		imagenes := []string{}
 		for _, imagen := range imagenesArr {
 			imagen, err = img.FromBase64ToImage(imagen, "votaciones/"+time.Now().Format(time.RFC3339Nano)+idUrb, false)
@@ -176,8 +176,8 @@ func CreateVotacion(c *gin.Context) {
 		}
 	}
 	tx.Commit()
-	residentes := []*models.Residente{}
-	err = models.Db.Where("Casa.etapa_id = ?", votacion.EtapaID).Joins("Casa").Find(&residentes).Error
+	residentes := []*models.Fiel{}
+	err = models.Db.Where("Casa.etapa_id = ?", votacion.ParroquiaID).Joins("Casa").Find(&residentes).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(err, "Error al crear publicacion", c, http.StatusInternalServerError)
@@ -221,7 +221,7 @@ func UpdateVotacion(c *gin.Context) {
 	}
 	imagenesArr := votacion.ImagenesArray
 	if len(imagenesArr) > 0 {
-		idUrb := fmt.Sprintf("%d", votacion.EtapaID)
+		idUrb := fmt.Sprintf("%d", votacion.ParroquiaID)
 		imagenes := []string{}
 		for _, imagen := range imagenesArr {
 			imagen, err = img.FromBase64ToImage(imagen, "votaciones/"+time.Now().Format(time.RFC3339Nano)+idUrb, false)
@@ -270,7 +270,7 @@ func ResponderVotacion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Usuario ya voto en esta encuesta"), nil, c, http.StatusNotAcceptable)
 		return
 	}
-	res.ResidenteID = uint(idUsuario)
+	res.FielID = uint(idUsuario)
 	tx := models.Db.Begin()
 	err = tx.Create(&res).Error
 	if err != nil {

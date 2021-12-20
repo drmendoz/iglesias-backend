@@ -18,8 +18,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateResidente(c *gin.Context) {
-	res := &models.Residente{}
+func CreateFiel(c *gin.Context) {
+	res := &models.Fiel{}
 	err := c.ShouldBindJSON(res)
 	if res.Usuario.Usuario == "" {
 		utils.CrearRespuesta(errors.New("Por favor Ingrese usuario y/o Contrasena"), nil, c, http.StatusBadRequest)
@@ -42,7 +42,7 @@ func CreateResidente(c *gin.Context) {
 	res.VisualizacionAreaSocial = &fechaActual
 	res.VisualizacionAdministradores = &fechaActual
 	res.VisualizacionReservas = &fechaActual
-	resComp := &models.Residente{}
+	resComp := &models.Fiel{}
 	err = models.Db.Where("Usuario.usuario = ?", res.Usuario.Usuario).Joins("Usuario").Joins("Casa").First(&resComp).Error
 	if resComp.ID != 0 {
 		utils.CrearRespuesta(errors.New("Ya existe un residente con ese usuario"), nil, c, http.StatusNotAcceptable)
@@ -123,7 +123,7 @@ func isNumeric(s string) bool {
 	return err == nil
 }
 
-func sortResidentes(residentes []*models.Residente, c *gin.Context) {
+func sortFiels(residentes []*models.Fiel, c *gin.Context) {
 	sort.SliceStable(residentes, func(i, j int) bool {
 		if isNumeric(residentes[i].Casa.Manzana) && isNumeric(residentes[j].Casa.Manzana) {
 			mzI, err := strconv.Atoi(residentes[i].Casa.Manzana)
@@ -141,13 +141,13 @@ func sortResidentes(residentes []*models.Residente, c *gin.Context) {
 	})
 }
 
-func GetResidente(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
-	residentes := []*models.Residente{}
+func GetFiel(c *gin.Context) {
+	idParroquia := c.GetInt("id_etapa")
+	residentes := []*models.Fiel{}
 	var err error
-	if idEtapa != 0 {
-		err = models.Db.Where("Casa.etapa_id = ?", idEtapa).Order("Casa.Manzana DESC, Casa.Villa DESC").Omit("Usuario.Contrasena").Joins("Usuario").Joins("Casa").Find(&residentes).Error
-		sortResidentes(residentes, c)
+	if idParroquia != 0 {
+		err = models.Db.Where("Casa.etapa_id = ?", idParroquia).Order("Casa.Manzana DESC, Casa.Villa DESC").Omit("Usuario.Contrasena").Joins("Usuario").Joins("Casa").Find(&residentes).Error
+		sortFiels(residentes, c)
 	} else {
 
 		err = models.Db.Omit("Usuario.Contrasena").Joins("Usuario").Joins("Casa").Find(&residentes).Error
@@ -173,9 +173,9 @@ func GetResidente(c *gin.Context) {
 	utils.CrearRespuesta(err, residentes, c, http.StatusOK)
 }
 
-func UpdateResidente(c *gin.Context) {
+func UpdateFiel(c *gin.Context) {
 
-	res := &models.Residente{}
+	res := &models.Fiel{}
 
 	err := c.ShouldBindJSON(res)
 	if err != nil {
@@ -184,11 +184,11 @@ func UpdateResidente(c *gin.Context) {
 	}
 	ui, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	res.ID = uint(ui)
-	adComp := &models.Residente{}
+	adComp := &models.Fiel{}
 	err = models.Db.Joins("Usuario").First(&adComp, res.ID).Error
 	if err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
-			utils.CrearRespuesta(errors.New("No existe Residente"), nil, c, http.StatusNotFound)
+			utils.CrearRespuesta(errors.New("No existe Fiel"), nil, c, http.StatusNotFound)
 			return
 		} else {
 			_ = c.Error(err)
@@ -247,7 +247,7 @@ func UpdateResidente(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al actualizar residente"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	err = tx.Model(&models.Residente{}).Where("id = ?", res.ID).Updates(map[string]interface{}{
+	err = tx.Model(&models.Fiel{}).Where("id = ?", res.ID).Updates(map[string]interface{}{
 		"confirmacion": res.Confirmacion,
 		"autorizacion": res.Autorizacion,
 		"is_principal": res.IsPrincipal}).Error
@@ -258,18 +258,18 @@ func UpdateResidente(c *gin.Context) {
 	}
 
 	tx.Commit()
-	utils.CrearRespuesta(nil, "Residente actualizado exitosamente", c, http.StatusOK)
+	utils.CrearRespuesta(nil, "Fiel actualizado exitosamente", c, http.StatusOK)
 }
 
 func UpdateTokenNotificacion(c *gin.Context) {
-	idResidente := c.GetInt("id_residente")
-	res := &models.Residente{}
+	idFiel := c.GetInt("id_residente")
+	res := &models.Fiel{}
 	err := c.ShouldBindJSON(res)
 	if err != nil {
 		utils.CrearRespuesta(errors.New("Error al actualizar token"), nil, c, http.StatusBadRequest)
 		return
 	}
-	err = models.Db.Select("token_notificacion").Where("id = ?", idResidente).Updates(res).Error
+	err = models.Db.Select("token_notificacion").Where("id = ?", idFiel).Updates(res).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al actualizar token"), nil, c, http.StatusInternalServerError)
@@ -278,8 +278,8 @@ func UpdateTokenNotificacion(c *gin.Context) {
 	utils.CrearRespuesta(err, "Token actualizado con exito", c, http.StatusOK)
 }
 
-func GetResidentePorId(c *gin.Context) {
-	res := &models.Residente{}
+func GetFielPorId(c *gin.Context) {
+	res := &models.Fiel{}
 	id := c.Param("id")
 	err := models.Db.Where("residente.id = ?", id).Omit("usuarios.contrasena").Joins("Usuario").First(res).Error
 	if err != nil {
@@ -305,21 +305,21 @@ func GetResidentePorId(c *gin.Context) {
 	utils.CrearRespuesta(nil, res, c, http.StatusOK)
 }
 
-func DeleteResidente(c *gin.Context) {
+func DeleteFiel(c *gin.Context) {
 	id := c.Param("id")
-	err := models.Db.Delete(&models.Residente{}, id).Error
+	err := models.Db.Delete(&models.Fiel{}, id).Error
 	if err != nil {
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al eliminar Residente"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al eliminar Fiel"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	utils.CrearRespuesta(nil, "Residente borrado exitosamente", c, http.StatusOK)
+	utils.CrearRespuesta(nil, "Fiel borrado exitosamente", c, http.StatusOK)
 }
 
-func GetResidentesPorCasa(c *gin.Context) {
+func GetFielsPorCasa(c *gin.Context) {
 	casa := &models.Casa{}
 	id := c.Param("id")
-	err := models.Db.Preload("Residentes").Preload("Residentes.Usuario").First(casa, id).Error
+	err := models.Db.Preload("Fiels").Preload("Fiels.Usuario").First(casa, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.CrearRespuesta(errors.New("Casa no encontrada"), nil, c, http.StatusNotFound)
@@ -335,7 +335,7 @@ func GetResidentesPorCasa(c *gin.Context) {
 		casa.Imagen = utils.SERVIMG + casa.Imagen
 	}
 
-	for _, residente := range casa.Residentes {
+	for _, residente := range casa.Fiels {
 		if residente.Usuario.Imagen == "" {
 			residente.Usuario.Imagen = utils.DefaultUser
 		} else {
@@ -346,7 +346,7 @@ func GetResidentesPorCasa(c *gin.Context) {
 	utils.CrearRespuesta(nil, casa, c, http.StatusOK)
 }
 
-func CambiarContrasenaResidente(c *gin.Context) {
+func CambiarContrasenaFiel(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
 	usuario := &models.Usuario{}
 	err := c.ShouldBindJSON(usuario)
@@ -379,9 +379,9 @@ func CambiarContrasenaResidente(c *gin.Context) {
 	utils.CrearRespuesta(nil, "Contraseña cambiada exitosamente", c, http.StatusOK)
 }
 
-func GetUResidentesCount(c *gin.Context) {
+func GetUFielsCount(c *gin.Context) {
 	var res int64
-	err := models.Db.Model(&models.Residente{}).Count(&res).Error
+	err := models.Db.Model(&models.Fiel{}).Count(&res).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error del servidor"), nil, c, http.StatusInternalServerError)
@@ -391,9 +391,9 @@ func GetUResidentesCount(c *gin.Context) {
 }
 
 func GetInformacionPerfil(c *gin.Context) {
-	idResidente := c.GetInt("id_residente")
-	res := &models.Residente{}
-	err := models.Db.Joins("Usuario").Preload("Casa").Preload("Casa.Etapa").Preload("Casa.Etapa.Urbanizacion").First(res, idResidente).Error
+	idFiel := c.GetInt("id_residente")
+	res := &models.Fiel{}
+	err := models.Db.Joins("Usuario").Preload("Casa").Preload("Casa.Etapa").Preload("Casa.Etapa.Urbanizacion").First(res, idFiel).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error interno del servidor"), nil, c, http.StatusInternalServerError)
@@ -410,7 +410,7 @@ func GetInformacionPerfil(c *gin.Context) {
 
 }
 
-func EditarImagenPerfilResidente(c *gin.Context) {
+func EditarImagenPerfilFiel(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
 	usuario := &models.Usuario{}
 	err := c.ShouldBindJSON(usuario)

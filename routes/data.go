@@ -10,7 +10,7 @@ func DataRouter(r *gin.RouterGroup) {
 	data := r.Group("data")
 	data.GET("/casas", controllers.GetCasasCount)
 	data.GET("/urbanizaciones", controllers.GetUrbanizacionesCount)
-	data.GET("/residentes", controllers.GetUResidentesCount)
+	data.GET("/residentes", controllers.GetUFielsCount)
 	data.POST("/contacto", controllers.SolicitudContacto)
 	data.GET("/bitacora-server", gin.WrapH(sockets.ServerVisita))
 }

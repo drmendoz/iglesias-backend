@@ -6,11 +6,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type HistoriaResidente struct {
+type HistoriaFiel struct {
 	gorm.Model
-	Url         string     `json:"url"`
-	IsVideo     bool       `json:"is_imagen"`
-	FechaFin    time.Time  `json:"fecha_fin"`
-	ResidenteID uint       `json:"id_autor"`
-	Residente   *Residente `json:"autor,omitempty"`
+	Url      string    `json:"url"`
+	IsVideo  bool      `json:"is_imagen"`
+	FechaFin time.Time `json:"fecha_fin"`
+	FielID   uint      `json:"id_autor"`
+	Fiel     *Fiel     `json:"autor,omitempty"`
 }

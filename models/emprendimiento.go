@@ -23,11 +23,11 @@ type Emprendimiento struct {
 	FechaPublicacion       time.Time               `json:"fecha_publicacion"`
 	FechaVencimiento       time.Time               `json:"fecha_vencimiento"`
 	Premium                bool                    `json:"premium" `
-	ResidenteID            uint                    `json:"id_residente"`
-	EtapaID                uint                    `json:"id_etapa"`
+	FielID                 uint                    `json:"id_residente"`
+	ParroquiaID            uint                    `json:"id_etapa"`
 	CategoriaMarketID      uint                    `json:"id_categoria"`
 	CategoriaMarket        *CategoriaMarket        `json:"categoria,omitempty"`
-	Residente              *Residente              `json:"residente,omitempty"`
+	Fiel                   *Fiel                   `json:"residente,omitempty"`
 	Imagenes               []string                `json:"imagenes" gorm:"-"`
 }
 

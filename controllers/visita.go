@@ -19,7 +19,7 @@ import (
 )
 
 func GetVisitas(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	idCasa := uint(c.GetInt("id_casa"))
 	tipoUsuario := c.Query("tipo_usuario")
 	mz := c.Query("mz")
@@ -40,7 +40,7 @@ func GetVisitas(c *gin.Context) {
 	visitas := []*models.Visita{}
 	if idCasa == 0 && (mz != "" && villa != "") {
 		casa := &models.Casa{}
-		err = models.Db.Model(&models.Casa{}).Where(&models.Casa{Manzana: mz, Villa: villa, EtapaID: idEtapa}).First(casa).Error
+		err = models.Db.Model(&models.Casa{}).Where(&models.Casa{Manzana: mz, Villa: villa, ParroquiaID: idParroquia}).First(casa).Error
 		if err != nil {
 			_ = c.Error(err)
 			utils.CrearRespuesta(errors.New("Error al obtener casa"), nil, c, http.StatusInternalServerError)
@@ -51,9 +51,9 @@ func GetVisitas(c *gin.Context) {
 	idAut := uint(idAutorizacion)
 	busqueda := &models.Visita{}
 	if idAut != 0 {
-		busqueda = &models.Visita{CasaID: idCasa, EtapaID: idEtapa, TipoUsuario: tipoUsuario, AutorizacionID: &idAut, DiaCreacion: fechaCreacion}
+		busqueda = &models.Visita{CasaID: idCasa, ParroquiaID: idParroquia, TipoUsuario: tipoUsuario, AutorizacionID: &idAut, DiaCreacion: fechaCreacion}
 	} else {
-		busqueda = &models.Visita{CasaID: idCasa, EtapaID: idEtapa, TipoUsuario: tipoUsuario, DiaCreacion: fechaCreacion}
+		busqueda = &models.Visita{CasaID: idCasa, ParroquiaID: idParroquia, TipoUsuario: tipoUsuario, DiaCreacion: fechaCreacion}
 	}
 	if idCasa == 0 && (mz != "" && villa == "") {
 		err = models.Db.Limit(100).Where(busqueda).Where("Casa.manzana = ?", mz).Order("updated_at desc").Joins("Publicador").Joins("Usuario").Joins("Casa").Joins("Autorizacion").Joins("Entrada").Joins("Salida").Find(&visitas).Error
@@ -122,15 +122,15 @@ func GetVisitas(c *gin.Context) {
 }
 
 func GetVisitasPorEtapa(c *gin.Context) {
-	idEtapa := c.Param("id")
+	idParroquia := c.Param("id")
 
-	idE, err := strconv.Atoi(idEtapa)
+	idE, err := strconv.Atoi(idParroquia)
 	if err != nil {
 		utils.CrearRespuesta(errors.New("Formato de id etapa incorrecto"), nil, c, http.StatusBadRequest)
 		return
 	}
 	visitas := []*models.Visita{}
-	err = models.Db.Where(&models.Visita{EtapaID: uint(idE)}).Order("created_at desc").Joins("Etapa").Joins("Publicador").Joins("Usuario").Joins("Casa").Joins("Entrada").Joins("Salida").Find(&visitas).Error
+	err = models.Db.Where(&models.Visita{ParroquiaID: uint(idE)}).Order("created_at desc").Joins("Etapa").Joins("Publicador").Joins("Usuario").Joins("Casa").Joins("Entrada").Joins("Salida").Find(&visitas).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener visitas"), nil, c, http.StatusInternalServerError)
@@ -204,8 +204,8 @@ func GetVisitaPorId(c *gin.Context) {
 
 func CreateVisita(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
-	idEtapa := c.GetInt("id_etapa")
-	if idUsuario == 0 || idEtapa == 0 {
+	idParroquia := c.GetInt("id_etapa")
+	if idUsuario == 0 || idParroquia == 0 {
 		utils.CrearRespuesta(errors.New("Error al crear visita"), nil, c, http.StatusInternalServerError)
 		return
 	}
@@ -213,7 +213,7 @@ func CreateVisita(c *gin.Context) {
 
 	err := c.ShouldBindJSON(visita)
 	visita.PublicadorID = uint(idUsuario)
-	visita.EtapaID = uint(idEtapa)
+	visita.ParroquiaID = uint(idParroquia)
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
@@ -255,7 +255,7 @@ func CreateVisita(c *gin.Context) {
 
 		return
 	}
-	residentes := []*models.Residente{}
+	residentes := []*models.Fiel{}
 	err = tx.Where("casa_id = ?", visita.CasaID).Find(&residentes).Error
 	if err != nil {
 		_ = c.Error(err)

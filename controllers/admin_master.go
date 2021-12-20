@@ -66,7 +66,7 @@ func CreateAdministrador(c *gin.Context) {
 				Categoria:     true,
 				Publicidad:    true,
 				Facturacion:   true,
-				Residente:     true,
+				Fiel:          true,
 				Usuario:       true,
 			}
 		}

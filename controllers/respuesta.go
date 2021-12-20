@@ -15,10 +15,10 @@ import (
 )
 
 func GetRespuestas(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	respuestas := []*models.RespuestaMensaje{}
 	var err error
-	err = models.Db.Order("created_at DESC").Where("etapa_id = ?", idEtapa).Joins("Mensaje").Joins("Autor").Find(&respuestas).Error
+	err = models.Db.Order("created_at DESC").Where("etapa_id = ?", idParroquia).Joins("Mensaje").Joins("Autor").Find(&respuestas).Error
 
 	if err != nil {
 		_ = c.Error(err)
@@ -70,9 +70,9 @@ func GetRespuestaPorId(c *gin.Context) {
 }
 
 func CreateRespuesta(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	idUsuario := c.GetInt("id_usuario")
-	if idEtapa == 0 {
+	if idParroquia == 0 {
 		utils.CrearRespuesta(errors.New("No existe el id_etapa"), nil, c, http.StatusOK)
 		return
 	}
@@ -91,7 +91,7 @@ func CreateRespuesta(c *gin.Context) {
 
 	imagenesArr := respuesta.ImagenesArray
 	if len(imagenesArr) > 0 {
-		idUrb := fmt.Sprintf("%d", idEtapa)
+		idUrb := fmt.Sprintf("%d", idParroquia)
 		imagenes := []string{}
 		for _, imagen := range imagenesArr {
 			imagen, err = img.FromBase64ToImage(imagen, "respuestas/"+time.Now().Format(time.RFC3339Nano)+idUrb, false)
@@ -113,7 +113,7 @@ func CreateRespuesta(c *gin.Context) {
 }
 
 func UpdateRespuesta(c *gin.Context) {
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	respuesta := &models.RespuestaMensaje{}
 
 	err := c.ShouldBindJSON(respuesta)
@@ -132,7 +132,7 @@ func UpdateRespuesta(c *gin.Context) {
 	}
 	imagenesArr := respuesta.ImagenesArray
 	if len(imagenesArr) > 0 {
-		idUrb := fmt.Sprintf("%d", idEtapa)
+		idUrb := fmt.Sprintf("%d", idParroquia)
 		imagenes := []string{}
 		for _, imagen := range imagenesArr {
 			imagen, err = img.FromBase64ToImage(imagen, "respuestas/"+time.Now().Format(time.RFC3339Nano)+idUrb, false)

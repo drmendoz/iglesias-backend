@@ -15,8 +15,8 @@ import (
 
 func GetModuloEtapas(c *gin.Context) {
 	modulos := []*models.ModuloEtapa{}
-	idEtapa := c.GetInt("id_etapa")
-	err := models.Db.Where(&models.ModuloEtapa{EtapaID: uint(idEtapa)}).Find(&modulos).Error
+	idParroquia := c.GetInt("id_etapa")
+	err := models.Db.Where(&models.ModuloEtapa{ParroquiaID: uint(idParroquia)}).Find(&modulos).Error
 
 	if err != nil {
 		_ = c.Error(err)
@@ -56,14 +56,14 @@ func GetModuloEtapaPorId(c *gin.Context) {
 }
 
 func CreateModuloEtapa(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	modulo := &models.ModuloEtapa{}
 	err := c.ShouldBindJSON(modulo)
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-	modulo.EtapaID = idEtapa
+	modulo.ParroquiaID = idParroquia
 	tx := models.Db.Begin()
 	err = tx.Omit("imagen").Create(modulo).Error
 	if err != nil {

@@ -11,9 +11,8 @@ type AdminGarita struct {
 	UrbanizacionLabel *UrbInfo   `json:"data_urb,omitempty" gorm:"-"`
 	Pdf               string     `json:"documento"`
 
-	EtapaID uint     `json:"id_etapa"`
-	Etapa   *Etapa   `json:"etapa"`
-	Usuario *Usuario `json:"usuario"`
+	ParroquiaID uint     `json:"id_etapa"`
+	Usuario     *Usuario `json:"usuario"`
 }
 
 type EtapaInfo struct {

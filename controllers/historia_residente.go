@@ -15,7 +15,7 @@ import (
 )
 
 func SubirHistoria(c *gin.Context) {
-	idResidente := uint(c.GetInt("id_residente"))
+	idFiel := uint(c.GetInt("id_residente"))
 	archivo, err := c.FormFile("historia")
 	isVid := false
 	if err != nil {
@@ -58,7 +58,7 @@ func SubirHistoria(c *gin.Context) {
 	fechaFinal := fechaInicio.Add(time.Hour*time.Duration(23) +
 		time.Minute*time.Duration(59) +
 		time.Second*time.Duration(0))
-	err = models.Db.Create(&models.HistoriaResidente{Url: nombreFinal, IsVideo: isVid, ResidenteID: idResidente, FechaFin: fechaFinal}).Error
+	err = models.Db.Create(&models.HistoriaFiel{Url: nombreFinal, IsVideo: isVid, FielID: idFiel, FechaFin: fechaFinal}).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al subir historia"), nil, c, http.StatusInternalServerError)
@@ -92,12 +92,12 @@ type HistoriasUsuarioNotificaciones struct {
 }
 
 func GetUsuariosHistoria(c *gin.Context) {
-	idResidente := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_residente")
 	fechaActual := time.Now().In(tiempo.Local)
-	hists := []*models.HistoriaResidente{}
-	err := models.Db.Order("created_at desc").Where("created_at < ?", fechaActual).Where("fecha_fin > ?", fechaActual).Preload("Residente", func(tx *gorm.DB) *gorm.DB {
+	hists := []*models.HistoriaFiel{}
+	err := models.Db.Order("created_at desc").Where("created_at < ?", fechaActual).Where("fecha_fin > ?", fechaActual).Preload("Fiel", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id", "usuario_id")
-	}).Preload("Residente.Usuario", func(tx *gorm.DB) *gorm.DB {
+	}).Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id,imagen,nombre,usuario")
 	}).Find(&hists).Error
 	if err != nil {
@@ -109,7 +109,7 @@ func GetUsuariosHistoria(c *gin.Context) {
 	for _, hist := range hists {
 		flag := true
 		for _, res := range residentes {
-			if res.ID == hist.ResidenteID {
+			if res.ID == hist.FielID {
 				flag = false
 				break
 			}
@@ -117,17 +117,17 @@ func GetUsuariosHistoria(c *gin.Context) {
 		}
 		if flag {
 			imagen := ""
-			if hist.Residente.Usuario.Imagen == "" {
+			if hist.Fiel.Usuario.Imagen == "" {
 				imagen = utils.DefaultUser
 			} else {
-				imagen = utils.SERVIMG + hist.Residente.Usuario.Imagen
+				imagen = utils.SERVIMG + hist.Fiel.Usuario.Imagen
 			}
 
-			res := &UsuarioHistoria{ID: hist.Residente.ID, Key: hist.Residente.Usuario.Nombre, Nombre: hist.Residente.Usuario.Usuario, Leido: false, Source: ImagenUsuario{Imagen: imagen}, FechaPublicacion: hist.CreatedAt}
+			res := &UsuarioHistoria{ID: hist.Fiel.ID, Key: hist.Fiel.Usuario.Nombre, Nombre: hist.Fiel.Usuario.Usuario, Leido: false, Source: ImagenUsuario{Imagen: imagen}, FechaPublicacion: hist.CreatedAt}
 			residentes = append(residentes, res)
 		}
 		var count int64
-		err = models.Db.Model(&models.LecturaHistoria{}).Where("residente_id = ?", idResidente).Where("historia_residente_id = ?", hist.ID).Count(&count).Error
+		err = models.Db.Model(&models.LecturaHistoria{}).Where("residente_id = ?", idFiel).Where("historia_residente_id = ?", hist.ID).Count(&count).Error
 		if err != nil {
 			_ = c.Error(err)
 			utils.CrearRespuesta(errors.New("Error al obtener usuarios"), nil, c, http.StatusInternalServerError)
@@ -135,7 +135,7 @@ func GetUsuariosHistoria(c *gin.Context) {
 		}
 		if count == 0 {
 			for _, res := range residentes {
-				if res.ID == hist.ResidenteID {
+				if res.ID == hist.FielID {
 					res.Leido = true
 					break
 				}
@@ -148,7 +148,7 @@ func GetUsuariosHistoria(c *gin.Context) {
 		residentes = append(residentes, &UsuarioHistoria{Leido: false, ID: 10110101, Key: "Practical", Nombre: "Practical", Source: ImagenUsuario{Imagen: utils.LogoPractical}})
 	}
 	slice.Sort(residentes[:], func(i, j int) bool {
-		return residentes[i].ID == uint(idResidente)
+		return residentes[i].ID == uint(idFiel)
 	})
 
 	utils.CrearRespuesta(nil, residentes, c, http.StatusOK)
@@ -156,13 +156,13 @@ func GetUsuariosHistoria(c *gin.Context) {
 }
 
 func GetUsuariosHistoriaNotifiaciones(c *gin.Context) {
-	idResidente := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_residente")
 	idCasa := c.GetInt("id_casa")
 	fechaActual := time.Now().In(tiempo.Local)
-	hists := []*models.HistoriaResidente{}
-	err := models.Db.Order("created_at desc").Where("created_at < ?", fechaActual).Where("fecha_fin > ?", fechaActual).Preload("Residente", func(tx *gorm.DB) *gorm.DB {
+	hists := []*models.HistoriaFiel{}
+	err := models.Db.Order("created_at desc").Where("created_at < ?", fechaActual).Where("fecha_fin > ?", fechaActual).Preload("Fiel", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id", "usuario_id")
-	}).Preload("Residente.Usuario", func(tx *gorm.DB) *gorm.DB {
+	}).Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id,imagen,nombre,usuario")
 	}).Find(&hists).Error
 	if err != nil {
@@ -174,7 +174,7 @@ func GetUsuariosHistoriaNotifiaciones(c *gin.Context) {
 	for _, hist := range hists {
 		flag := true
 		for _, res := range residentes {
-			if res.ID == hist.ResidenteID {
+			if res.ID == hist.FielID {
 				flag = false
 				break
 			}
@@ -182,16 +182,16 @@ func GetUsuariosHistoriaNotifiaciones(c *gin.Context) {
 		}
 		if flag {
 			imagen := ""
-			if hist.Residente.Usuario.Imagen == "" {
+			if hist.Fiel.Usuario.Imagen == "" {
 				imagen = utils.DefaultUser
 			} else {
-				imagen = utils.SERVIMG + hist.Residente.Usuario.Imagen
+				imagen = utils.SERVIMG + hist.Fiel.Usuario.Imagen
 			}
-			res := &UsuarioHistoria{ID: hist.Residente.ID, Key: hist.Residente.Usuario.Nombre, Nombre: hist.Residente.Usuario.Usuario, Leido: false, Source: ImagenUsuario{Imagen: imagen}, FechaPublicacion: hist.CreatedAt, Close: false}
+			res := &UsuarioHistoria{ID: hist.Fiel.ID, Key: hist.Fiel.Usuario.Nombre, Nombre: hist.Fiel.Usuario.Usuario, Leido: false, Source: ImagenUsuario{Imagen: imagen}, FechaPublicacion: hist.CreatedAt, Close: false}
 			residentes = append(residentes, res)
 		}
 		var count int64
-		err = models.Db.Model(&models.LecturaHistoria{}).Where("residente_id = ?", idResidente).Where("historia_residente_id = ?", hist.ID).Count(&count).Error
+		err = models.Db.Model(&models.LecturaHistoria{}).Where("residente_id = ?", idFiel).Where("historia_residente_id = ?", hist.ID).Count(&count).Error
 		if err != nil {
 			_ = c.Error(err)
 			utils.CrearRespuesta(errors.New("Error al obtener usuarios"), nil, c, http.StatusInternalServerError)
@@ -199,7 +199,7 @@ func GetUsuariosHistoriaNotifiaciones(c *gin.Context) {
 		}
 		if count == 0 {
 			for _, res := range residentes {
-				if res.ID == hist.ResidenteID {
+				if res.ID == hist.FielID {
 					res.Leido = true
 					break
 				}
@@ -217,7 +217,7 @@ func GetUsuariosHistoriaNotifiaciones(c *gin.Context) {
 	})
 
 	slice.Sort(residentes[:], func(i, j int) bool {
-		return residentes[i].ID == uint(idResidente)
+		return residentes[i].ID == uint(idFiel)
 	})
 
 	if len(residentes) == 0 {
@@ -235,20 +235,20 @@ func GetUsuariosHistoriaNotifiaciones(c *gin.Context) {
 
 	}
 
-	idEtapa := c.GetInt("id_etapa")
-	notificaciones, err := obtenerNotificaciones(idResidente, idCasa, idEtapa)
+	idParroquia := c.GetInt("id_etapa")
+	notificaciones, err := obtenerNotificaciones(idFiel, idCasa, idParroquia)
 	if err != nil {
 		utils.CrearRespuesta(errors.New("Error al obtener usuarios"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	residente := &models.Residente{}
+	residente := &models.Fiel{}
 	etapa := &models.Etapa{}
-	err = models.Db.Select("autorizacion").First(&residente, idResidente).Error
+	err = models.Db.Select("autorizacion").First(&residente, idFiel).Error
 	if err != nil {
 		utils.CrearRespuesta(errors.New("Error al obtener usuarios"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	err = models.Db.Select("pagos_tarjeta", "modulo_market", "modulo_publicacion", "modulo_votacion", "modulo_area_social", "modulo_equipo", "modulo_historia", "modulo_bitacora", "urbanizacion", "formulario_entrada", "formulario_salida", "modulo_alicuota", "modulo_emprendimiento", "modulo_camaras", "modulo_directiva", "modulo_galeria", "modulo_horarios", "modulo_mi_registro").First(&etapa, idEtapa).Error
+	err = models.Db.Select("pagos_tarjeta", "modulo_market", "modulo_publicacion", "modulo_votacion", "modulo_area_social", "modulo_equipo", "modulo_historia", "modulo_bitacora", "urbanizacion", "formulario_entrada", "formulario_salida", "modulo_alicuota", "modulo_emprendimiento", "modulo_camaras", "modulo_directiva", "modulo_galeria", "modulo_horarios", "modulo_mi_registro").First(&etapa, idParroquia).Error
 	permisos := &Permisos{ModuloAutorizacion: residente.Autorizacion}
 	if err != nil {
 		utils.CrearRespuesta(errors.New("Error al obtener usuarios"), nil, c, http.StatusInternalServerError)
@@ -270,11 +270,11 @@ type Historia struct {
 }
 
 func GetHistoriasDeUsuario(c *gin.Context) {
-	idResidenteToken := uint(c.GetInt("id_residente"))
-	idResidente := c.Param("id")
+	idFielToken := uint(c.GetInt("id_residente"))
+	idFiel := c.Param("id")
 
 	historias := []*Historia{}
-	if idResidente == "10110101" {
+	if idFiel == "10110101" {
 		var views int64
 		views = 0
 		historias = append(historias, &Historia{ID: 10110101, Contenido: utils.RutaTutorial, Tipo: "video", Leido: 1, Views: &views, IsUser: false})
@@ -282,8 +282,8 @@ func GetHistoriasDeUsuario(c *gin.Context) {
 		return
 	}
 	fechaActual := time.Now().In(tiempo.Local)
-	hists := []*models.HistoriaResidente{}
-	err := models.Db.Select("id", "is_video", "fecha_fin", "created_at", "url").Order("created_at asc").Where("created_at < ?", fechaActual).Where("fecha_fin > ?", fechaActual).Where("residente_id = ?", idResidente).Find(&hists).Error
+	hists := []*models.HistoriaFiel{}
+	err := models.Db.Select("id", "is_video", "fecha_fin", "created_at", "url").Order("created_at asc").Where("created_at < ?", fechaActual).Where("fecha_fin > ?", fechaActual).Where("residente_id = ?", idFiel).Find(&hists).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener historias"), nil, c, http.StatusInternalServerError)
@@ -293,7 +293,7 @@ func GetHistoriasDeUsuario(c *gin.Context) {
 	for _, hist := range hists {
 		historia := &Historia{}
 		var count int64
-		err = models.Db.Model(&models.LecturaHistoria{}).Where("historia_residente_id = ?", hist.ID).Where("residente_id = ?", idResidenteToken).Count(&count).Error
+		err = models.Db.Model(&models.LecturaHistoria{}).Where("historia_residente_id = ?", hist.ID).Where("residente_id = ?", idFielToken).Count(&count).Error
 		if err != nil {
 			_ = c.Error(err)
 			utils.CrearRespuesta(errors.New("Error al obtener historias"), nil, c, http.StatusInternalServerError)
@@ -311,13 +311,13 @@ func GetHistoriasDeUsuario(c *gin.Context) {
 		} else {
 			historia.Leido = 0
 		}
-		idResidenteFormat, err := strconv.Atoi(idResidente)
+		idFielFormat, err := strconv.Atoi(idFiel)
 		if err != nil {
 			_ = c.Error(err)
 			utils.CrearRespuesta(errors.New("Error en parametros de peticion"), nil, c, http.StatusBadRequest)
 			return
 		}
-		if uint(idResidenteFormat) == idResidenteToken {
+		if uint(idFielFormat) == idFielToken {
 
 			var visualizaciones int64
 			err = models.Db.Model(&models.LecturaHistoria{}).Where("historia_residente_id = ?", hist.ID).Count(&visualizaciones).Error
@@ -350,7 +350,7 @@ func GetHistoriasDeUsuario(c *gin.Context) {
 
 func ConfirmarLecturaHistoria(c *gin.Context) {
 	idHistoria := c.Param("id")
-	idResidente := uint(c.GetInt("id_residente"))
+	idFiel := uint(c.GetInt("id_residente"))
 	lectura := &models.LecturaHistoria{}
 	idHist, err := strconv.Atoi(idHistoria)
 	if err != nil {
@@ -359,8 +359,8 @@ func ConfirmarLecturaHistoria(c *gin.Context) {
 		return
 
 	}
-	lectura.HistoriaResidenteID = uint(idHist)
-	lectura.ResidenteID = idResidente
+	lectura.HistoriaFielID = uint(idHist)
+	lectura.FielID = idFiel
 	err = models.Db.Create(lectura).Error
 	if err != nil {
 		_ = c.Error(err)
@@ -372,7 +372,7 @@ func ConfirmarLecturaHistoria(c *gin.Context) {
 
 func DeleteHistoria(c *gin.Context) {
 	id := c.Param("id")
-	err := models.Db.Delete(&models.HistoriaResidente{}, id).Error
+	err := models.Db.Delete(&models.HistoriaFiel{}, id).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al eliminar historia"), nil, c, http.StatusInternalServerError)

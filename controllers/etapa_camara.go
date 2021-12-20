@@ -15,8 +15,8 @@ import (
 
 func GetEtapaCamaras(c *gin.Context) {
 	camaras := []*models.EtapaCamara{}
-	idEtapa := c.GetInt("id_etapa")
-	err := models.Db.Where(&models.EtapaCamara{EtapaID: uint(idEtapa)}).Find(&camaras).Error
+	idParroquia := c.GetInt("id_etapa")
+	err := models.Db.Where(&models.EtapaCamara{ParroquiaID: uint(idParroquia)}).Find(&camaras).Error
 
 	if err != nil {
 		_ = c.Error(err)
@@ -56,14 +56,14 @@ func GetEtapaCamaraPorId(c *gin.Context) {
 }
 
 func CreateEtapaCamara(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	camara := &models.EtapaCamara{}
 	err := c.ShouldBindJSON(camara)
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-	camara.EtapaID = idEtapa
+	camara.ParroquiaID = idParroquia
 	tx := models.Db.Begin()
 	err = tx.Omit("imagen").Create(camara).Error
 	if err != nil {

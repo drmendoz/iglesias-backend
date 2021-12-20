@@ -43,58 +43,6 @@ func LoginAdminMaster(c *gin.Context) {
 	utils.CrearRespuesta(nil, adm, c, http.StatusAccepted)
 }
 
-func LoginAdminGarita(c *gin.Context) {
-	creds := &auth.Login{}
-	err := c.ShouldBindJSON(creds)
-
-	if err != nil {
-		utils.CrearRespuesta(errors.New("Parametros de Request Invalidos"), nil, c, http.StatusBadRequest)
-		return
-	}
-	adm := &models.AdminGarita{}
-	creds.Contrasena = auth.HashPassword(creds.Contrasena)
-	res := models.Db.Where("Usuario.usuario = ? ", creds.Usuario).Joins("Usuario").Joins("Etapa").Preload("Etapa.Urbanizacion").First(adm)
-	if res.Error != nil || creds.Contrasena != adm.Usuario.Contrasena {
-		utils.CrearRespuesta(errors.New("Usuario y/o contrasena incorrecta"), nil, c, http.StatusUnauthorized)
-		return
-	}
-	if adm.Usuario.Imagen == "" {
-		adm.Usuario.Imagen = utils.DefaultUser
-	} else {
-
-		adm.Usuario.Imagen = utils.SERVIMG + adm.Usuario.Imagen
-	}
-	if adm.Etapa == nil {
-		utils.CrearRespuesta(errors.New("Su etapa ya no existe"), nil, c, http.StatusUnauthorized)
-		return
-	}
-	if adm.Etapa.Urbanizacion == nil {
-		utils.CrearRespuesta(errors.New("Su urbanizacion ya no existe"), nil, c, http.StatusUnauthorized)
-		return
-	}
-
-	adm.Token = auth.GenerarToken(adm.Usuario, "admin-garita")
-	if adm.Etapa.Imagen == "" {
-		adm.Etapa.Imagen = utils.DefaultEtapa
-	} else {
-		adm.Etapa.Imagen = utils.SERVIMG + adm.Etapa.Imagen
-	}
-	if adm.Etapa.Urbanizacion.Imagen == "" {
-		adm.Etapa.Urbanizacion.Imagen = utils.DefaultEtapa
-	} else {
-		adm.Etapa.Urbanizacion.Imagen = utils.SERVIMG + adm.Etapa.Urbanizacion.Imagen
-	}
-	adm.EtapaLabel = &models.EtapaInfo{
-		EtapaNombre: adm.Etapa.Nombre,
-		Imagen:      adm.Etapa.Imagen,
-	}
-	adm.UrbanizacionLabel = &models.UrbInfo{
-		Nombre: adm.Etapa.Urbanizacion.Nombre,
-		Imagen: adm.Etapa.Urbanizacion.Imagen,
-	}
-	utils.CrearRespuesta(nil, adm, c, http.StatusAccepted)
-}
-
 func LoginAdminParroquia(c *gin.Context) {
 	creds := &auth.Login{}
 	err := c.ShouldBindJSON(creds)
@@ -105,26 +53,14 @@ func LoginAdminParroquia(c *gin.Context) {
 	}
 	adm := &models.AdminParroquia{}
 	creds.Contrasena = auth.HashPassword(creds.Contrasena)
-	res := models.Db.Where("Usuario.usuario = ? ", creds.Usuario).Joins("Usuario").Preload("Etapa", func(tx *gorm.DB) *gorm.DB {
-		return tx.Select("id", "nombre", "imagen", "urbanizacion_id", "pagos_tarjeta",
-			"modulo_market", "modulo_publicacion", "modulo_votacion", "modulo_area_social",
-			"modulo_equipo", "modulo_historia", "modulo_bitacora", "urbanizacion", "formulario_entrada",
-			"formulario_salida", "modulo_alicuota", "modulo_emprendimiento", "modulo_camaras", "modulo_directiva",
-			"modulo_galeria", "modulo_horarios", "modulo_mi_registro")
-	}).Preload("Etapa.Urbanizacion", func(tx *gorm.DB) *gorm.DB {
-		return tx.Select("id", "nombre")
-	}).Preload("Permisos").First(adm)
+	res := models.Db.Where("Usuario.usuario = ? ", creds.Usuario).Joins("Usuario").Preload("Parroquia").Preload("Permisos").First(adm)
 	if res.Error != nil || creds.Contrasena != adm.Usuario.Contrasena {
 		utils.CrearRespuesta(errors.New("Usuario y/o contrasena incorrecta"), nil, c, http.StatusUnauthorized)
 		return
 	}
-	if adm.Etapa.Urbanizacion == nil {
-		utils.CrearRespuesta(errors.New("Su urbanizacion ya no existe"), nil, c, http.StatusUnauthorized)
-		return
 
-	}
-	if adm.Etapa == nil {
-		utils.CrearRespuesta(errors.New("Su etapa ya no existe"), nil, c, http.StatusUnauthorized)
+	if adm.Parroquia == nil {
+		utils.CrearRespuesta(errors.New("Su parroquia ya no existe"), nil, c, http.StatusUnauthorized)
 		return
 	}
 	if adm.Usuario.Imagen == "" {
@@ -134,24 +70,11 @@ func LoginAdminParroquia(c *gin.Context) {
 			adm.Usuario.Imagen = utils.SERVIMG + adm.Usuario.Imagen
 		}
 	}
-	adm.Modulos = &models.Modulos{
-		ModuloMarket:               adm.Etapa.ModuloMarket,
-		ModuloPublicacion:          adm.Etapa.ModuloPublicacion,
-		ModuloVotacion:             adm.Etapa.ModuloVotacion,
-		ModuloAreaSocial:           adm.Etapa.ModuloAreaSocial,
-		ModuloEquipoAdministrativo: adm.Etapa.ModuloEquipoAdministrativo,
-		ModuloHistoria:             adm.Etapa.ModuloHistoria,
-		ModuloBitacora:             adm.Etapa.ModuloBitacora,
-	}
-	adm.NombreEtapa = &adm.Etapa.Nombre
-	adm.NombreUrbanizacion = &adm.Etapa.Urbanizacion.Nombre
-
-	adm.Etapa = nil
-	adm.Token = auth.GenerarToken(adm.Usuario, "admin-etapa")
+	adm.Token = auth.GenerarToken(adm.Usuario, "admin-parroquia")
 	utils.CrearRespuesta(nil, adm, c, http.StatusAccepted)
 }
 
-func LoginResidente(c *gin.Context) {
+func LoginFiel(c *gin.Context) {
 	creds := &auth.Login{}
 	err := c.ShouldBindJSON(creds)
 
@@ -160,9 +83,9 @@ func LoginResidente(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Parametros de Request Invalidos"), nil, c, http.StatusBadRequest)
 		return
 	}
-	adm := &models.Residente{}
+	adm := &models.Fiel{}
 	creds.Contrasena = auth.HashPassword(creds.Contrasena)
-	err = models.Db.Where("Usuario.usuario = ? ", creds.Usuario).Joins("Usuario").Preload("Casa").Preload("Casa.Etapa").Preload("Casa.Etapa.Urbanizacion").First(adm).Error
+	err = models.Db.Where("Usuario.usuario = ? ", creds.Usuario).Joins("Usuario").Preload("Parroquia").First(adm).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.CrearRespuesta(errors.New("Usuario y/o contrasena incorrecta"), nil, c, http.StatusUnauthorized)
@@ -178,18 +101,6 @@ func LoginResidente(c *gin.Context) {
 
 	}
 
-	if adm.Casa == nil {
-		utils.CrearRespuesta(errors.New("Su casa ha sido eliminada del sistema"), nil, c, http.StatusUnauthorized)
-		return
-	}
-	if adm.Casa.Etapa == nil {
-		utils.CrearRespuesta(errors.New("Su etapa ha sido eliminada del sistema"), nil, c, http.StatusUnauthorized)
-		return
-	}
-	if adm.Casa.Etapa.Urbanizacion == nil {
-		utils.CrearRespuesta(errors.New("Su urbanizacion ha sido eliminada del sistema"), nil, c, http.StatusUnauthorized)
-		return
-	}
 	adm.Usuario.Contrasena = ""
 	if adm.Usuario.Imagen == "" {
 		adm.Usuario.Imagen = utils.DefaultUser
@@ -197,24 +108,13 @@ func LoginResidente(c *gin.Context) {
 	} else {
 		adm.Usuario.Imagen = utils.SERVIMG + adm.Usuario.Imagen
 	}
-	if adm.Casa.Imagen == "" {
-		adm.Casa.Imagen = utils.DefaultCasa
+	if adm.Parroquia.Imagen == "" {
+		adm.Parroquia.Imagen = utils.DefaultCasa
 
 	} else {
-		adm.Casa.Imagen = utils.SERVIMG + adm.Casa.Imagen
+		adm.Parroquia.Imagen = utils.SERVIMG + adm.Parroquia.Imagen
 	}
-	if adm.Casa.Etapa.Imagen == "" {
-		adm.Casa.Etapa.Imagen = utils.DefaultEtapa
 
-	} else {
-		adm.Casa.Etapa.Imagen = utils.SERVIMG + adm.Casa.Etapa.Imagen
-	}
-	if adm.Casa.Etapa.Urbanizacion.Imagen == "" {
-		adm.Casa.Etapa.Urbanizacion.Imagen = utils.DefaultUrb
-
-	} else {
-		adm.Casa.Etapa.Urbanizacion.Imagen = utils.SERVIMG + adm.Casa.Etapa.Urbanizacion.Imagen
-	}
 	adm.Usuario.Cedula = &adm.Cedula
 	numTemporal, _ := auth.GenerarCodigoTemporal(6)
 	err = models.Db.Model(&adm.Usuario).Updates(models.Usuario{RandomNumToken: numTemporal}).Error
@@ -223,7 +123,7 @@ func LoginResidente(c *gin.Context) {
 		utils.CrearRespuesta(errors.New(("Error al iniciar sesion")), nil, c, http.StatusInternalServerError)
 		return
 	}
-	adm.Token = auth.GenerarToken(adm.Usuario, "residente")
+	adm.Token = auth.GenerarToken(adm.Usuario, "fiel")
 	adm.TokenNotificacion = creds.TokenNotificacion
 	if adm.Confirmacion {
 		adm.Mensaje = "Es necesario cambiar contrasena"
@@ -231,7 +131,7 @@ func LoginResidente(c *gin.Context) {
 		return
 	}
 
-	err = models.Db.Model(&models.Residente{}).Where("id = ?", adm.ID).Updates(models.Residente{SesionIniciada: true}).Error
+	err = models.Db.Model(&models.Fiel{}).Where("id = ?", adm.ID).Updates(models.Fiel{SesionIniciada: true}).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New(("Error al iniciar sesion")), nil, c, http.StatusInternalServerError)
@@ -241,7 +141,7 @@ func LoginResidente(c *gin.Context) {
 	utils.CrearRespuesta(nil, adm, c, http.StatusAccepted)
 }
 
-func CambioDeContrasenaResidente(c *gin.Context) {
+func CambioDeContrasenaFiel(c *gin.Context) {
 	recover := &auth.NuevaContrasena{}
 	err := c.ShouldBindJSON(recover)
 	if err != nil {
@@ -249,7 +149,7 @@ func CambioDeContrasenaResidente(c *gin.Context) {
 		return
 	}
 	usuario := &models.Usuario{}
-	res := &models.Residente{}
+	res := &models.Fiel{}
 	err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(res).Error
 	usuario = res.Usuario
 	if err != nil {
@@ -286,9 +186,6 @@ func CambioDeContrasenaResidente(c *gin.Context) {
 		}
 		res.Usuario.Imagen = utils.SERVIMG + res.Usuario.Imagen
 	}
-	println("ewcover.Imagen")
-	println(recover.Imagen)
-	println(recover.Imagen != "")
 	err = tx.Model(&models.Usuario{}).Select("contrasena").Where("id = ?", usuario.ID).Updates(models.Usuario{Contrasena: recover.Contrasena}).Error
 	if err != nil {
 		tx.Rollback()
@@ -296,7 +193,7 @@ func CambioDeContrasenaResidente(c *gin.Context) {
 		return
 	}
 	res.Confirmacion = false
-	err = tx.Model(&models.Residente{}).Select("confirmacion").Where("id = ?", res.ID).Updates(res).Error
+	err = tx.Model(&models.Fiel{}).Select("confirmacion").Where("id = ?", res.ID).Updates(res).Error
 	if err != nil {
 		tx.Rollback()
 		utils.CrearRespuesta(errors.New("Error al cambiar contrasena"), nil, c, http.StatusInternalServerError)
@@ -308,15 +205,15 @@ func CambioDeContrasenaResidente(c *gin.Context) {
 }
 
 func CerrarSesion(c *gin.Context) {
-	idResidente := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_fiel")
 	tx := models.Db.Begin()
-	err := tx.Model(&models.Residente{}).Where(" id = ?", idResidente).Update("sesion_iniciada", false).Error
+	err := tx.Model(&models.Fiel{}).Where(" id = ?", idFiel).Update("sesion_iniciada", false).Error
 	if err != nil {
 		tx.Rollback()
 		utils.CrearRespuesta(errors.New("Error al cerrar sesion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	err = tx.Model(&models.Residente{}).Where(" id = ?", idResidente).Update("token_notificacion", "").Error
+	err = tx.Model(&models.Fiel{}).Where(" id = ?", idFiel).Update("token_notificacion", "").Error
 	if err != nil {
 		tx.Rollback()
 		utils.CrearRespuesta(errors.New("Error al cerrar sesion"), nil, c, http.StatusInternalServerError)

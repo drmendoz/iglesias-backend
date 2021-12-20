@@ -172,18 +172,18 @@ type Buzones struct {
 	Recibidos []*models.Buzon `json:"recibidos"`
 }
 
-func GetBuzonesResidente(c *gin.Context) {
+func GetBuzonesFiel(c *gin.Context) {
 	id := c.GetInt("id_usuario")
 	idCasa := c.GetInt("id_casa")
 	idUsuario := uint(id)
 	buzones := &Buzones{}
-	buzonesRecibidos, err := getBuzonesRecibidosResidente(int(idUsuario), idCasa)
+	buzonesRecibidos, err := getBuzonesRecibidosFiel(int(idUsuario), idCasa)
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener buzon"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	buzonesEnviados, err := getBuzonesEnviadosResidente(int(idUsuario))
+	buzonesEnviados, err := getBuzonesEnviadosFiel(int(idUsuario))
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener buzon"), nil, c, http.StatusInternalServerError)
@@ -195,7 +195,7 @@ func GetBuzonesResidente(c *gin.Context) {
 	utils.CrearRespuesta(nil, buzones, c, http.StatusOK)
 }
 
-func getBuzonesRecibidosResidente(idUsuario int, idCasa int) ([]*models.Buzon, error) {
+func getBuzonesRecibidosFiel(idUsuario int, idCasa int) ([]*models.Buzon, error) {
 	recibidos := []*models.Buzon{}
 	publicos := []*models.Buzon{}
 	err := models.Db.Where("publico = ?", true).Where("publicador_id != ?", idUsuario).Where("is_admin = ?", true).Preload("Publicador").Preload("Destinatarios").Preload("Archivos").Preload("Mensajes").Preload("Mensajes.Archivos").Order("created_at desc").Find(&publicos).Error
@@ -299,7 +299,7 @@ func getBuzonesRecibidosResidente(idUsuario int, idCasa int) ([]*models.Buzon, e
 
 }
 
-func getBuzonesEnviadosResidente(idUsuario int) ([]*models.Buzon, error) {
+func getBuzonesEnviadosFiel(idUsuario int) ([]*models.Buzon, error) {
 	buzonesEnviados := []*models.Buzon{}
 	err := models.Db.Where("publicador_id = ?", idUsuario).Preload("Publicador").Preload("Destinatarios").Preload("Archivos").Order("created_at desc").Find(&buzonesEnviados).Error
 	if err != nil {
@@ -413,7 +413,7 @@ func GetMensajesBuzones(c *gin.Context) {
 
 func ResponderRespuestaBuzonPrivado(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	idCasa := uint(c.GetInt("id_casa"))
 	rol := c.GetString("rol")
 	idBuzon, err := strconv.ParseUint(c.Param("id_buzon"), 10, 64)
@@ -431,7 +431,7 @@ func ResponderRespuestaBuzonPrivado(c *gin.Context) {
 		buzon.CasaID = &idCasa
 	}
 	buzon.PublicadorID = uint(idUsuario)
-	buzon.EtapaID = uint(idEtapa)
+	buzon.ParroquiaID = uint(idParroquia)
 	buzon.IsAdmin = rol == "admin-etapa"
 	buzon.Publico = false
 	if idBuzon != 0 {
@@ -447,7 +447,7 @@ func ResponderRespuestaBuzonPrivado(c *gin.Context) {
 			utils.CrearRespuesta(errors.New("Error al crear buzon"), nil, c, http.StatusOK)
 			return
 		}
-		buzonPrincipal := &models.Buzon{Titulo: buzonRemitente.Titulo, Descripcion: buzonRemitente.Descripcion, PublicadorID: buzonRemitente.PublicadorID, Publico: false, IsAdmin: buzonRemitente.IsAdmin, EtapaID: uint(idEtapa), EsRespuesta: true, CasaID: buzonRemitente.CasaID}
+		buzonPrincipal := &models.Buzon{Titulo: buzonRemitente.Titulo, Descripcion: buzonRemitente.Descripcion, PublicadorID: buzonRemitente.PublicadorID, Publico: false, IsAdmin: buzonRemitente.IsAdmin, ParroquiaID: uint(idParroquia), EsRespuesta: true, CasaID: buzonRemitente.CasaID}
 		err = tx.Create(buzonPrincipal).Error
 		if err != nil {
 			_ = tx.Rollback()
@@ -492,7 +492,7 @@ func ResponderRespuestaBuzonPrivado(c *gin.Context) {
 
 func CreateBuzon(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	idCasa := uint(c.GetInt("id_casa"))
 	rol := c.GetString("rol")
 	idBuzon, err := strconv.ParseUint(c.Param("id_buzon"), 10, 64)
@@ -510,7 +510,7 @@ func CreateBuzon(c *gin.Context) {
 		buzon.CasaID = &idCasa
 	}
 	buzon.PublicadorID = uint(idUsuario)
-	buzon.EtapaID = uint(idEtapa)
+	buzon.ParroquiaID = uint(idParroquia)
 	buzon.IsAdmin = rol == "admin-etapa"
 
 	idUBuzon := uint(idBuzon)
@@ -601,9 +601,9 @@ func CreateArchivosBuzon(c *gin.Context) {
 	utils.CrearRespuesta(nil, "Mensaje enviado con éxito", c, http.StatusOK)
 }
 
-func CreateBuzonResidente(c *gin.Context) {
+func CreateBuzonFiel(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	idBuzon, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		idBuzon = 0
@@ -616,7 +616,7 @@ func CreateBuzonResidente(c *gin.Context) {
 		return
 	}
 	buzon.PublicadorID = uint(idUsuario)
-	buzon.EtapaID = uint(idEtapa)
+	buzon.ParroquiaID = uint(idParroquia)
 	buzon.Publico = true
 	idUBuzon := uint(idBuzon)
 	if idBuzon != 0 {

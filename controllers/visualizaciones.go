@@ -17,25 +17,25 @@ func ActualizarVisualizacion(c *gin.Context) {
 	var err error
 	switch modulo {
 	case "emprendimiento":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionEmprendimiento: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionEmprendimiento: &fechaActual}).Error
 	case "bitacora":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionBitacora: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionBitacora: &fechaActual}).Error
 	case "galeria":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionGaleria: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionGaleria: &fechaActual}).Error
 	case "buzon":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionBuzon: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionBuzon: &fechaActual}).Error
 	case "votacion":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionVotacion: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionVotacion: &fechaActual}).Error
 	case "administrador":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionAdministradores: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionAdministradores: &fechaActual}).Error
 	case "camara":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionCamara: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionCamara: &fechaActual}).Error
 	case "area-social":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionAreaSocial: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionAreaSocial: &fechaActual}).Error
 	case "alicuota":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionAlicuota: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionAlicuota: &fechaActual}).Error
 	case "reserva":
-		err = models.Db.Where("id = ?", idRes).Updates(&models.Residente{VisualizacionReservas: &fechaActual}).Error
+		err = models.Db.Where("id = ?", idRes).Updates(&models.Fiel{VisualizacionReservas: &fechaActual}).Error
 	}
 
 	if err != nil {
@@ -43,9 +43,9 @@ func ActualizarVisualizacion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al actualizar visualizacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	idEtapa := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_etapa")
 	idCasa := c.GetInt("id_casa")
-	notificaciones, err := obtenerNotificaciones(idRes, idCasa, idEtapa)
+	notificaciones, err := obtenerNotificaciones(idRes, idCasa, idParroquia)
 	if err != nil {
 		utils.CrearRespuesta(errors.New("Error al obtener notificaciones"), nil, c, http.StatusInternalServerError)
 		return

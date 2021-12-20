@@ -2,10 +2,10 @@ package models
 
 import "gorm.io/gorm"
 
-type ResidenteTarjeta struct {
+type FielTarjeta struct {
 	gorm.Model
 	TokenTarjeta  string         `json:"token"`
-	ResidenteID   uint           `json:"id_residente"`
-	Residente     *Residente     `json:"residente"`
+	FielID        uint           `json:"id_residente"`
+	Fiel          *Fiel          `json:"residente"`
 	Transacciones []*Transaccion `json:"transacciones"`
 }

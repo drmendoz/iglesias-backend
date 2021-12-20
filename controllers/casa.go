@@ -15,11 +15,11 @@ import (
 )
 
 func GetCasas(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	mz := c.Query("mz")
 
 	casas := []*models.Casa{}
-	err := models.Db.Order("manzana asc").Order("villa asc").Where(&models.Casa{EtapaID: idEtapa, Manzana: mz}).Preload("Alicuotas").Find(&casas).Error
+	err := models.Db.Order("manzana asc").Order("villa asc").Where(&models.Casa{ParroquiaID: idParroquia, Manzana: mz}).Preload("Alicuotas").Find(&casas).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener casas"), nil, c, http.StatusInternalServerError)
@@ -77,14 +77,14 @@ func GetCasaPorId(c *gin.Context) {
 }
 
 func CreateCasa(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 	casa := &models.Casa{}
 	err := c.ShouldBindJSON(casa)
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-	casa.EtapaID = idEtapa
+	casa.ParroquiaID = idParroquia
 	tx := models.Db.Begin()
 	err = tx.Omit("imagen").Create(casa).Error
 	if err != nil {
@@ -130,7 +130,7 @@ func CreateCasa(c *gin.Context) {
 
 func createAlicuotasCasa(tx *gorm.DB, casa *models.Casa) error {
 	etapa := &models.Etapa{}
-	err := models.Db.First(etapa, casa.EtapaID).Error
+	err := models.Db.First(etapa, casa.ParroquiaID).Error
 	date := time.Now().In(tiempo.Local)
 	mes := int(date.Month())
 	for i := mes; i < 13; i++ {
@@ -199,9 +199,9 @@ func DeleteCasa(c *gin.Context) {
 }
 
 func GetCasasPorEtapa(c *gin.Context) {
-	idEtapa := c.Param("id")
+	idParroquia := c.Param("id")
 	casas := []*models.Casa{}
-	err := models.Db.Where("etapa_id = ?", idEtapa).Find(&casas).Error
+	err := models.Db.Where("etapa_id = ?", idParroquia).Find(&casas).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener casas"), nil, c, http.StatusInternalServerError)

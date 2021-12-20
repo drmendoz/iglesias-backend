@@ -7,7 +7,7 @@ import (
 type AreaSocial struct {
 	gorm.Model
 	Nombre                   string                   `json:"nombre"`
-	EtapaID                  uint                     `json:"id_etapa"`
+	ParroquiaID              uint                     `json:"id_etapa"`
 	Imagen                   string                   `json:"imagen"`
 	ImagenReserva            string                   `json:"imagen_reserva"`
 	IsPublica                bool                     `json:"is_publica" gorm:"default:false"`
@@ -19,7 +19,7 @@ type AreaSocial struct {
 	Aforo                    int                      `json:"aforo"`
 	Estado                   string                   `json:"estado" gorm:"-"`
 	TiempoReservacionMinutos int                      `json:"tiempo_reservacion_minutos"`
-	ReservasResidenteMes     int                      `json:"reservas_mes_residente"`
+	ReservasFielMes          int                      `json:"reservas_mes_residente"`
 	Horario                  []*AreaHorario           `json:"horario,omitempty" gorm:"-"`
 	Horarios                 []AreaHorario            `json:"horarios,omitempty"`
 	Reservaciones            *[]ReservacionAreaSocial `json:"reservaciones,omitempty"`

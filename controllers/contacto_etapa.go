@@ -16,9 +16,9 @@ import (
 func GetContactoEtapas(c *gin.Context) {
 	contactos := []*models.ContactoEtapa{}
 	var err error
-	idEtapa := c.GetInt("id_etapa")
-	if idEtapa != 0 {
-		err = models.Db.Where("etapa_id = ?", idEtapa).Find(&contactos).Error
+	idParroquia := c.GetInt("id_etapa")
+	if idParroquia != 0 {
+		err = models.Db.Where("etapa_id = ?", idParroquia).Find(&contactos).Error
 	} else {
 		err = models.Db.Find(&contactos).Error
 	}
@@ -60,7 +60,7 @@ func GetContactoEtapaPorId(c *gin.Context) {
 }
 
 func CreateContactoEtapa(c *gin.Context) {
-	idEtapa := uint(c.GetInt("id_etapa"))
+	idParroquia := uint(c.GetInt("id_etapa"))
 
 	contacto := &models.ContactoEtapa{}
 	err := c.ShouldBindJSON(contacto)
@@ -68,7 +68,7 @@ func CreateContactoEtapa(c *gin.Context) {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-	contacto.EtapaID = idEtapa
+	contacto.ParroquiaID = idParroquia
 	tx := models.Db.Begin()
 	err = tx.Omit("imagen").Create(contacto).Error
 	if err != nil {

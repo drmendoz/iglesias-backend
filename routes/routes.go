@@ -36,7 +36,7 @@ func init() {
 	administradorMasterRouter(router)
 	administradorGaritaRouter(router)
 	administradorEtapaRouter(router)
-	ResidenteRouter(router)
+	FielRouter(router)
 	DataRouter(router)
 	R.GET("/socket.io/*any", gin.WrapH(sockets.ServerVisita))
 	R.POST("/socket.io/*any", gin.WrapH(sockets.ServerVisita))

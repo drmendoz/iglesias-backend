@@ -9,7 +9,7 @@ import (
 type Votacion struct {
 	gorm.Model
 	Pregunta         string            `json:"pregunta"`
-	EtapaID          uint              `json:"id_etapa"`
+	ParroquiaID      uint              `json:"id_etapa"`
 	UsuarioVotacion  bool              `json:"usuario_voto" gorm:"-"`
 	FechaVencimiento time.Time         `json:"fecha_vencimiento"`
 	Expiro           bool              `json:"expiro" gorm:"-"`

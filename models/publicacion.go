@@ -9,7 +9,7 @@ type Publicacion struct {
 	Leido               bool                 `json:"leido" gorm:"-"`
 	Adjuntado           bool                 `json:"adjuntado" gorm:"default:false"`
 	UsuarioID           uint                 `json:"id_usuario"`
-	EtapaID             uint                 `json:"id_etapa"`
+	ParroquiaID         uint                 `json:"id_etapa"`
 	Etapa               *Etapa               `json:"etapa"`
 	Usuario             *Usuario             `json:"usuario"`
 	IsVertical          bool                 `json:"is_vertical" gorm:"default:false"`

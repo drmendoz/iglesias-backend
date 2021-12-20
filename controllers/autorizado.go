@@ -67,8 +67,8 @@ func GetAutorizadoPorId(c *gin.Context) {
 
 func CreateAutorizado(c *gin.Context) {
 	idUsuario := c.GetInt("id_usuario")
-	idEtapa := c.GetInt("id_etapa")
-	if idUsuario == 0 || idEtapa == 0 {
+	idParroquia := c.GetInt("id_etapa")
+	if idUsuario == 0 || idParroquia == 0 {
 		utils.CrearRespuesta(errors.New("Error al crear autorizado"), nil, c, http.StatusInternalServerError)
 		return
 	}
@@ -93,7 +93,7 @@ func CreateAutorizado(c *gin.Context) {
 		autorizado.Pdf = ""
 	}
 	autorizado.PublicadorID = uint(idUsuario)
-	autorizado.EtapaID = uint(idEtapa)
+	autorizado.ParroquiaID = uint(idParroquia)
 
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
