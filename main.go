@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	port := ":8080"
+	port := ":8081"
 	if utils.Viper.GetBool("PROD") {
 		port = ":" + utils.Viper.GetString("APP_PORT")
 	}
