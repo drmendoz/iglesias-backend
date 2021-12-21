@@ -74,7 +74,7 @@ func CreateParroquia(c *gin.Context) {
 		etp.Imagen = utils.DefaultParroquia
 	} else {
 		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "etapas/"+time.Now().Format(time.RFC3339)+idUrb, false)
+		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "parroquias/"+time.Now().Format(time.RFC3339)+idUrb, false)
 		utils.Log.Info(etp.Imagen)
 		if err != nil {
 			_ = c.Error(err)
@@ -141,7 +141,7 @@ func UpdateParroquia(c *gin.Context) {
 	// }
 	if etp.Imagen != "" {
 		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "etapas/"+time.RFC3339+idUrb, false)
+		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "parroquias/"+time.RFC3339+idUrb, false)
 		if err != nil {
 			_ = c.Error(err)
 			tx.Rollback()

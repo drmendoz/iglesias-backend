@@ -18,7 +18,7 @@ import (
 
 func GetAdministradores(c *gin.Context) {
 	administradores := []*models.AdminMaster{}
-	err := models.Db.Joins("Usuario").Order("Usuario.Apellido ASC").Omit("Usuario.Contrasena").Find(&administradores).Error
+	err := models.Db.Joins("Usuario").Order("Usuario.Apellido ASC").Omit("Usuario.Contrasena").Preload("Permisos").Find(&administradores).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener administadores"), nil, c, http.StatusInternalServerError)
@@ -156,7 +156,7 @@ func UpdateAdministrador(c *gin.Context) {
 			return
 		}
 		if adm.Usuario != nil {
-			err = tx.Where("id = ?", adm.UsuarioID).Updates(adm.Usuario).Error
+			err = tx.Where("id = ?", adm.UsuarioID).Omit("contrasena").Updates(adm.Usuario).Error
 			if err != nil {
 				tx.Rollback()
 				_ = c.Error(err)
@@ -172,10 +172,10 @@ func UpdateAdministrador(c *gin.Context) {
 		utils.CrearRespuesta(nil, adm, c, http.StatusOK)
 		return
 	}
-	// if adComp.ID != 0 {
-	// 	utils.CrearRespuesta(errors.New("Ya existe un administrador con ese correo"), nil, c, http.StatusNotAcceptable)
-	// 	return
-	// }
+	if adComp.ID != 0 {
+		utils.CrearRespuesta(errors.New("Ya existe un administrador con ese correo"), nil, c, http.StatusNotAcceptable)
+		return
+	}
 
 	if err != nil {
 		_ = c.Error(err)

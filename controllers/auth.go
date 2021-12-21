@@ -25,7 +25,7 @@ func LoginAdminMaster(c *gin.Context) {
 	}
 	adm := &models.AdminMaster{}
 	creds.Contrasena = auth.HashPassword(creds.Contrasena)
-	res := models.Db.Where("Usuario.usuario = ?", creds.Usuario).Joins("Usuario").First(adm)
+	res := models.Db.Where("Usuario.usuario = ?", creds.Usuario).Joins("Usuario").Preload("Permisos").First(adm)
 	if res.Error != nil || creds.Contrasena != adm.Usuario.Contrasena {
 		utils.CrearRespuesta(errors.New("Usuario y/o contrasena incorrecta"), nil, c, http.StatusUnauthorized)
 		return
