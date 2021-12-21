@@ -56,10 +56,10 @@ func CreateAdministradorParroquia(c *gin.Context) {
 		return
 	}
 	if isMaster {
-		adm.Permisos = models.AdminParroquiaPermiso{Alicuota: true, AreaSocial: true,
-			Emprendimiento: true, Casa: true, Usuario: true, Seguridad: true,
-			Ingreso: true, Voto: true, Directiva: true, Camara: true, Reserva: true,
-			ExpresoEscolar: true, Buzon: true}
+		adm.Permisos = models.AdminParroquiaPermiso{Usuario: true, Horario: true,
+			Emprendimiento: true, Actividad: true, Intencion: true, Musica: true,
+			Ayudemos: true, Misa: true,
+			Curso: true}
 		adm.EsMaster = true
 	}
 	adComp := &models.AdminParroquia{}
@@ -136,7 +136,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 			return
 		}
 		if adm.Usuario != nil {
-			err = tx.Omit("imagen").Where("id = ?", adm.UsuarioID).Updates(adm.Usuario).Error
+			err = tx.Omit("imagen", "contrasena").Where("id = ?", adm.UsuarioID).Updates(adm.Usuario).Error
 			if err != nil {
 				tx.Rollback()
 				_ = c.Error(err)
@@ -181,7 +181,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 func GetAdministradorParroquiaPorId(c *gin.Context) {
 	adm := &models.AdminMaster{}
 	id := c.Param("id")
-	err := models.Db.Where("admin_etapa.id = ?", id).Omit("usuarios.contrasena").Joins("Usuario").First(adm).Error
+	err := models.Db.Where("admin_etapa.id = ?", id).Omit("usuarios.contrasena").Joins("Usuario").Preload("Permisos").First(adm).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
