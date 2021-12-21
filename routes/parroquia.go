@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func etapaRoutes(r *gin.RouterGroup) {
-	admin := r.Group("etapa")
+func parroquiaRoutes(r *gin.RouterGroup) {
+	admin := r.Group("parroquias")
 	admin.GET("", controllers.GetParroquias)
 	admin.POST("", controllers.CreateParroquia)
 	admin.PUT("/:id", controllers.UpdateParroquia)

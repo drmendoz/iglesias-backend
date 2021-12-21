@@ -70,8 +70,8 @@ func EnviarCambioContrasenaMaster(usuario models.AdminMaster) error {
 	return err
 }
 
-func EnviarCambioContrasenaEtapa(usuario models.AdminParroquia) error {
-	r := NewRequest([]string{usuario.Usuario.Correo}, "Practical App: Cambio de contrasena obligatorio", "Cambio de contrasena!")
+func EnviarCambioContrasenaParroquia(usuario models.AdminParroquia) error {
+	r := NewRequest([]string{usuario.Usuario.Correo}, "Iglesias App: Cambio de contrasena obligatorio", "Cambio de contrasena!")
 	err := r.ParseTemplate("views/cambio.html", usuario)
 	if err != nil {
 		return err

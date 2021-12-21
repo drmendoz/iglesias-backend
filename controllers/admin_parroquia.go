@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetAdministradoresEtapa(c *gin.Context) {
+func GetAdministradoresParroquia(c *gin.Context) {
 	administradores := []*models.AdminParroquia{}
 	idParroquia := c.GetInt("id_parroquia")
 	err := models.Db.Where(&models.AdminParroquia{ParroquiaID: uint(idParroquia)}).Omit("usuario.Contrasena").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
@@ -37,9 +37,9 @@ func GetAdministradoresEtapa(c *gin.Context) {
 	utils.CrearRespuesta(err, administradores, c, http.StatusOK)
 }
 
-func CreateAdministradorEtapa(c *gin.Context) {
+func CreateAdministradorParroquia(c *gin.Context) {
 
-	idParroquia := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_parroquia")
 	adm := &models.AdminParroquia{}
 	rol := c.GetString("rol")
 	isMaster := rol == "master"
@@ -93,7 +93,7 @@ func CreateAdministradorEtapa(c *gin.Context) {
 			}
 			adm.Usuario.Imagen = utils.SERVIMG + adm.Usuario.Imagen
 		}
-		err = mail.EnviarCambioContrasenaEtapa(*adm)
+		err = mail.EnviarCambioContrasenaParroquia(*adm)
 		tx.Commit()
 		utils.CrearRespuesta(nil, adm, c, http.StatusCreated)
 
@@ -110,7 +110,7 @@ func CreateAdministradorEtapa(c *gin.Context) {
 	}
 }
 
-func UpdateAdministradorEtapa(c *gin.Context) {
+func UpdateAdministradorParroquia(c *gin.Context) {
 
 	adm := &models.AdminParroquia{}
 
@@ -179,7 +179,7 @@ func UpdateAdministradorEtapa(c *gin.Context) {
 	}
 }
 
-func GetAdministradorEtapaPorId(c *gin.Context) {
+func GetAdministradorParroquiaPorId(c *gin.Context) {
 	adm := &models.AdminMaster{}
 	id := c.Param("id")
 	err := models.Db.Where("admin_etapa.id = ?", id).Omit("usuarios.contrasena").Joins("Usuario").First(adm).Error
@@ -203,7 +203,7 @@ func GetAdministradorEtapaPorId(c *gin.Context) {
 	utils.CrearRespuesta(nil, adm, c, http.StatusOK)
 }
 
-func DeleteAdministradorEtapa(c *gin.Context) {
+func DeleteAdministradorParroquia(c *gin.Context) {
 	id := c.Param("id")
 	err := models.Db.Delete(&models.AdminParroquia{}, id).Error
 	if err != nil {
