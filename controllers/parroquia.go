@@ -15,7 +15,7 @@ import (
 
 func GetParroquias(c *gin.Context) {
 	etps := []*models.Parroquia{}
-	err := models.Db.Order("Nombre ASC").Find(&etps).Error
+	err := models.Db.Order("Nombre ASC").Preload("Iglesia").Find(&etps).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener parroquias"), nil, c, http.StatusInternalServerError)

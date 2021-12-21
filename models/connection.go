@@ -52,7 +52,7 @@ func init() {
 
 func migrarTablas() {
 	//Poner tablas para migrar
-	err := Db.AutoMigrate(&Usuario{}, &AdminMaster{}, &AdminParroquia{}, &Fiel{}, &Parroquia{})
+	err := Db.AutoMigrate(&Usuario{}, &AdminMaster{}, &AdminParroquia{}, &Fiel{}, &Parroquia{}, &Iglesia{})
 	if err != nil {
 		utils.Log.Warn(err)
 		utils.Log.Fatal("Error al migrar modelos")
