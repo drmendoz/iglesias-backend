@@ -56,23 +56,23 @@ func DevolverTransaccion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al devolver transaccion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	if transaccion.Tipo == "ALI" {
-		err = tx.Where("transaccion_id = ?", transaccion.ID).Updates(&models.Alicuota{Estado: "PENDIENTE"}).Error
-		if err != nil {
-			tx.Rollback()
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al devolver transaccion"), nil, c, http.StatusInternalServerError)
-			return
-		}
-	} else if transaccion.Tipo == "RES" {
-		err = tx.Where("transaccion_id = ?", transaccion.ID).Delete(&models.ReservacionAreaSocial{}).Error
-		if err != nil {
-			tx.Rollback()
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al devolver transaccion"), nil, c, http.StatusInternalServerError)
-			return
-		}
-	}
+	// if transaccion.Tipo == "ALI" {
+	// 	err = tx.Where("transaccion_id = ?", transaccion.ID).Updates(&models.Alicuota{Estado: "PENDIENTE"}).Error
+	// 	if err != nil {
+	// 		tx.Rollback()
+	// 		_ = c.Error(err)
+	// 		utils.CrearRespuesta(errors.New("Error al devolver transaccion"), nil, c, http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// } else if transaccion.Tipo == "RES" {
+	// 	err = tx.Where("transaccion_id = ?", transaccion.ID).Delete(&models.ReservacionAreaSocial{}).Error
+	// 	if err != nil {
+	// 		tx.Rollback()
+	// 		_ = c.Error(err)
+	// 		utils.CrearRespuesta(errors.New("Error al devolver transaccion"), nil, c, http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// }
 	respuesta, err := paymentez.DevolverPago(transaccion.ID)
 	if err != nil {
 		tx.Rollback()

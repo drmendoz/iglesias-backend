@@ -28,7 +28,7 @@ func init() {
 	user := utils.Viper.GetString("DB_USER")
 	password := utils.Viper.GetString("DB_PASS")
 	server := utils.Viper.GetString("DB_SERVER")
-	database := "urbanizaciones_develop"
+	database := "iglesias_develop"
 	if utils.Viper.GetBool("PROD") {
 		database = utils.Viper.GetString("DB_NAME")
 	}
@@ -52,7 +52,7 @@ func init() {
 
 func migrarTablas() {
 	//Poner tablas para migrar
-	err := Db.AutoMigrate(&Usuario{}, &AdminMaster{}, &AdminParroquia{})
+	err := Db.AutoMigrate(&Usuario{}, &AdminMaster{}, &AdminParroquia{}, &Fiel{})
 	if err != nil {
 		utils.Log.Warn(err)
 		utils.Log.Fatal("Error al migrar modelos")

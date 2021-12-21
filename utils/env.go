@@ -13,7 +13,7 @@ var SERVIMG string
 var DefaultUrb string
 var DefaultUser string
 var DefaultNoticia string
-var DefaultEtapa string
+var DefaultParroquia string
 var DefaultAdministrativo string
 var DefaultVisita string
 var DefaultGaleria string
@@ -49,7 +49,7 @@ func init() {
 	DefaultNoticia = Viper.GetString("DEFAULT_NOTICIA")
 	DefaultUser = Viper.GetString("DEFAULT_USER")
 	DefaultUrb = Viper.GetString("DEFAULT_URB")
-	DefaultEtapa = Viper.GetString("DEFAULT_ETAPA")
+	DefaultParroquia = Viper.GetString("DEFAULT_PARROQUIA")
 	DefaultAdministrativo = Viper.GetString("DEFAULT_ADMINISTRATIVO")
 	DefaultVisita = Viper.GetString("DEFAULT_VISITA")
 	DefaultGaleria = Viper.GetString("DEFAULT_GALERIA")

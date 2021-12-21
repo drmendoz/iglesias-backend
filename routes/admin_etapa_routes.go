@@ -12,5 +12,4 @@ func administradorEtapaRoutes(r *gin.RouterGroup) {
 	admin.PUT("/:id", controllers.UpdateAdministradorEtapa)
 	admin.GET("/:id", controllers.GetAdministradorEtapaPorId)
 	admin.DELETE("/:id", controllers.DeleteAdministradorEtapa)
-	admin.GET("/:id/casas", controllers.GetCasasPorEtapa)
 }

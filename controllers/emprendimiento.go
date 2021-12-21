@@ -37,8 +37,7 @@ func CreateEmprendimiento(c *gin.Context) {
 	}
 	item.EmprendimientoImagenes = []*models.EmprendimientoImagen{}
 	for _, imagen := range item.Imagenes {
-		empImagen := &models.EmprendimientoImagen{}
-		empImagen.Imagen = imagen
+		empImagen := &models.EmprendimientoImagen{Imagen: imagen}
 		item.EmprendimientoImagenes = append(item.EmprendimientoImagenes, empImagen)
 	}
 	// suscrito, err := verificarSuscripcion(idFiel)
@@ -76,7 +75,6 @@ func CreateEmprendimiento(c *gin.Context) {
 			return
 		}
 	}
-	item.Premium = true
 	item.FechaPublicacion = fechaActual
 	item.FechaVencimiento = fechaFin
 	item.ParroquiaID = idParroquia
@@ -180,7 +178,7 @@ func ObtenerEmprendimientos(c *gin.Context) {
 	fechaActual := time.Now().In(tiempo.Local)
 
 	//Recomendados
-	err = models.Db.Where("estado = ?", "VIG").Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), Premium: true}).Where("fecha_publicacion < ?", fechaActual).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
+	err = models.Db.Where("estado = ?", "VIG").Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat)}).Where("fecha_publicacion < ?", fechaActual).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id", "imagen", "telefono", "usuario", "telefono")
 	}).Order("created_at desc").Find(&emps.Recomendados).Error
 	if err != nil {
@@ -224,6 +222,7 @@ func ObtenerEmprendimientos(c *gin.Context) {
 		}
 		emp.TelefonoUsuario = emp.Fiel.Usuario.Telefono
 		emp.NombreUsuario = emp.Fiel.Usuario.Usuario
+		emp.Imagenes = []string{}
 		for _, img := range emp.EmprendimientoImagenes {
 			if img.Imagen == "" {
 				img.Imagen = utils.DefaultAreaSocial

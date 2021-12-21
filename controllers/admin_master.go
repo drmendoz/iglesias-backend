@@ -18,7 +18,7 @@ import (
 
 func GetAdministradores(c *gin.Context) {
 	administradores := []*models.AdminMaster{}
-	err := models.Db.Joins("Usuario").Order("Usuario.Apellido ASC").Omit("Usuario.Contrasena").Preload("Permisos").Find(&administradores).Error
+	err := models.Db.Joins("Usuario").Order("Usuario.Apellido ASC").Omit("Usuario.Contrasena").Find(&administradores).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener administadores"), nil, c, http.StatusInternalServerError)
@@ -32,7 +32,7 @@ func GetAdministradores(c *gin.Context) {
 				adm.Usuario.Imagen = utils.SERVIMG + adm.Usuario.Imagen
 			}
 		}
-
+		adm.Usuario.Contrasena = ""
 	}
 	utils.CrearRespuesta(err, administradores, c, http.StatusOK)
 }
@@ -40,8 +40,8 @@ func GetAdministradores(c *gin.Context) {
 func CreateAdministrador(c *gin.Context) {
 	adm := &models.AdminMaster{}
 	err := c.ShouldBindJSON(adm)
-	rol := c.GetString("rol")
-	isMaster := rol == "master"
+	//rol := c.GetString("rol")
+	//isMaster := rol == "master"
 
 	if err != nil || adm.Usuario.Usuario == "" {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
@@ -56,20 +56,20 @@ func CreateAdministrador(c *gin.Context) {
 		adm.ContraHash = adm.Usuario.Contrasena
 		adm.Usuario.Contrasena = clave
 		tx := models.Db.Begin()
-		if isMaster {
-			adm.Permisos = models.AdminMasterPermiso{
-				Autorizado:    true,
-				Urbanizacion:  true,
-				Etapa:         true,
-				Administrador: true,
-				Modulo:        true,
-				Categoria:     true,
-				Publicidad:    true,
-				Facturacion:   true,
-				Fiel:          true,
-				Usuario:       true,
-			}
-		}
+		// if isMaster {
+		// 	adm.Permisos = models.AdminMasterPermiso{
+		// 		Autorizado:    true,
+		// 		Urbanizacion:  true,
+		// 		Etapa:         true,
+		// 		Administrador: true,
+		// 		Modulo:        true,
+		// 		Categoria:     true,
+		// 		Publicidad:    true,
+		// 		Facturacion:   true,
+		// 		Fiel:          true,
+		// 		Usuario:       true,
+		// 	}
+		// }
 
 		err = tx.Create(adm).Error
 		if err != nil {

@@ -20,6 +20,7 @@ type Emprendimiento struct {
 	TelefonoUsuario        string                  `json:"celular_usuario" gorm:"-"`
 	Ciudad                 string                  `json:"ciudad"`
 	EmprendimientoImagenes []*EmprendimientoImagen `json:"-" `
+	Imagenes               []string                `json:"imagenes" gorm:"-"`
 	FechaPublicacion       time.Time               `json:"fecha_publicacion"`
 	FechaVencimiento       time.Time               `json:"fecha_vencimiento"`
 	FielID                 uint                    `json:"id_fiel"`

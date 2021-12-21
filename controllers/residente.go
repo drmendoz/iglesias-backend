@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -31,21 +30,21 @@ func CreateFiel(c *gin.Context) {
 		return
 	}
 	res.Usuario.Contrasena, _ = auth.GenerarCodigoTemporal(6)
-	fechaActual := time.Now()
-	res.VisualizacionBitacora = &fechaActual
-	res.VisualizacionBuzon = &fechaActual
-	res.VisualizacionEmprendimiento = &fechaActual
-	res.VisualizacionGaleria = &fechaActual
-	res.VisualizacionVotacion = &fechaActual
-	res.VisualizacionCamara = &fechaActual
-	res.VisualizacionAlicuota = &fechaActual
-	res.VisualizacionAreaSocial = &fechaActual
-	res.VisualizacionAdministradores = &fechaActual
-	res.VisualizacionReservas = &fechaActual
+	//fechaActual := time.Now()
+	// res.VisualizacionBitacora = &fechaActual
+	// res.VisualizacionBuzon = &fechaActual
+	// res.VisualizacionEmprendimiento = &fechaActual
+	// res.VisualizacionGaleria = &fechaActual
+	// res.VisualizacionVotacion = &fechaActual
+	// res.VisualizacionCamara = &fechaActual
+	// res.VisualizacionAlicuota = &fechaActual
+	// res.VisualizacionAreaSocial = &fechaActual
+	// res.VisualizacionAdministradores = &fechaActual
+	//res.VisualizacionReservas = &fechaActual
 	resComp := &models.Fiel{}
-	err = models.Db.Where("Usuario.usuario = ?", res.Usuario.Usuario).Joins("Usuario").Joins("Casa").First(&resComp).Error
+	err = models.Db.Where("Usuario.usuario = ?", res.Usuario.Usuario).Joins("Usuario").Joins("Parroquia").First(&resComp).Error
 	if resComp.ID != 0 {
-		utils.CrearRespuesta(errors.New("Ya existe un residente con ese usuario"), nil, c, http.StatusNotAcceptable)
+		utils.CrearRespuesta(errors.New("Ya existe un fiel con ese usuario"), nil, c, http.StatusNotAcceptable)
 		return
 	}
 	err = models.Db.Where("Usuario.correo = ?", res.Usuario.Correo).Joins("Usuario").Joins("Casa").First(&resComp).Error
@@ -54,24 +53,7 @@ func CreateFiel(c *gin.Context) {
 		return
 	}
 	if errors.Is(gorm.ErrRecordNotFound, err) {
-		if res.Pdf != "" {
-			uri := strings.Split(res.Pdf, ";")[0]
-			if uri == "data:application/pdf" {
-				nombre := fmt.Sprintf("admin-etapa-%d.pdf", time.Now().Unix())
-				base64 := strings.Split(res.Pdf, ",")[1]
-				err = utils.SubirPdf(nombre, base64)
-				if err != nil {
-					_ = c.Error(err)
-					utils.CrearRespuesta(errors.New("Error al crear administrador"), nil, c, http.StatusInternalServerError)
-					return
-				}
-				res.Pdf = nombre
-			} else {
-				res.Pdf = ""
-			}
-		} else {
-			res.Pdf = ""
-		}
+
 		res.ContraHash = res.Usuario.Contrasena
 		clave := auth.HashPassword(res.Usuario.Contrasena)
 		res.Usuario.Contrasena = clave
@@ -104,7 +86,6 @@ func CreateFiel(c *gin.Context) {
 			utils.CrearRespuesta(errors.New("Error al enviar mensaje con contrasena temporal"), nil, c, http.StatusInternalServerError)
 			return
 		}
-		res.Casa = nil
 		tx.Commit()
 		utils.CrearRespuesta(nil, res, c, http.StatusCreated)
 
@@ -123,31 +104,12 @@ func isNumeric(s string) bool {
 	return err == nil
 }
 
-func sortFiels(residentes []*models.Fiel, c *gin.Context) {
-	sort.SliceStable(residentes, func(i, j int) bool {
-		if isNumeric(residentes[i].Casa.Manzana) && isNumeric(residentes[j].Casa.Manzana) {
-			mzI, err := strconv.Atoi(residentes[i].Casa.Manzana)
-			if err != nil {
-				_ = c.Error(err)
-			}
-			mzJ, err := strconv.Atoi(residentes[j].Casa.Manzana)
-			if err != nil {
-				_ = c.Error(err)
-			}
-			return mzI < mzJ
-		} else {
-			return residentes[i].Casa.Manzana < residentes[j].Casa.Manzana
-		}
-	})
-}
-
 func GetFiel(c *gin.Context) {
-	idParroquia := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_parroquia")
 	residentes := []*models.Fiel{}
 	var err error
 	if idParroquia != 0 {
 		err = models.Db.Where("Casa.etapa_id = ?", idParroquia).Order("Casa.Manzana DESC, Casa.Villa DESC").Omit("Usuario.Contrasena").Joins("Usuario").Joins("Casa").Find(&residentes).Error
-		sortFiels(residentes, c)
 	} else {
 
 		err = models.Db.Omit("Usuario.Contrasena").Joins("Usuario").Joins("Casa").Find(&residentes).Error
@@ -165,10 +127,6 @@ func GetFiel(c *gin.Context) {
 				usr.Usuario.Imagen = utils.SERVIMG + usr.Usuario.Imagen
 			}
 		}
-		if usr.Pdf != "" {
-			usr.Pdf = "https://api.practical.com.ec/public/pdf/" + usr.Pdf
-		}
-
 	}
 	utils.CrearRespuesta(err, residentes, c, http.StatusOK)
 }
@@ -192,7 +150,7 @@ func UpdateFiel(c *gin.Context) {
 			return
 		} else {
 			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al crear residente"), nil, c, http.StatusInternalServerError)
+			utils.CrearRespuesta(errors.New("Error al crear fiel"), nil, c, http.StatusInternalServerError)
 			return
 		}
 
@@ -209,7 +167,7 @@ func UpdateFiel(c *gin.Context) {
 			if err != nil {
 				_ = c.Error(err)
 				tx.Rollback()
-				utils.CrearRespuesta(errors.New("Error al actualizar residente"), nil, c, http.StatusInternalServerError)
+				utils.CrearRespuesta(errors.New("Error al actualizar fiel"), nil, c, http.StatusInternalServerError)
 				return
 			}
 			res.Usuario.Imagen = utils.SERVIMG + res.Usuario.Imagen
@@ -217,43 +175,24 @@ func UpdateFiel(c *gin.Context) {
 		err = tx.Where("id = ?", adComp.Usuario.ID).Omit("contrasena").Updates(res.Usuario).Error
 	}
 
-	if res.Pdf != "" {
-		uri := strings.Split(res.Pdf, ";")[0]
-		if uri == "data:application/pdf" {
-			nombre := fmt.Sprintf("admin-etapa-%d.pdf", time.Now().Unix())
-			base64 := strings.Split(res.Pdf, ",")[1]
-			err = utils.SubirPdf(nombre, base64)
-			if err != nil {
-				_ = c.Error(err)
-				utils.CrearRespuesta(errors.New("Error al crear administrador"), nil, c, http.StatusInternalServerError)
-				return
-			}
-			res.Pdf = nombre
-		} else {
-			res.Pdf = ""
-		}
-	} else {
-		res.Pdf = ""
-	}
 	err = tx.Omit("Usuario").Updates(res).Error
 	if err != nil {
 		tx.Rollback()
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al actualizar residente"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al actualizar fiel"), nil, c, http.StatusInternalServerError)
 		return
 	}
 	if err != nil {
 		tx.Rollback()
-		utils.CrearRespuesta(errors.New("Error al actualizar residente"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al actualizar fiel"), nil, c, http.StatusInternalServerError)
 		return
 	}
 	err = tx.Model(&models.Fiel{}).Where("id = ?", res.ID).Updates(map[string]interface{}{
 		"confirmacion": res.Confirmacion,
-		"autorizacion": res.Autorizacion,
-		"is_principal": res.IsPrincipal}).Error
+	}).Error
 	if err != nil {
 		tx.Rollback()
-		utils.CrearRespuesta(errors.New("Error al actualizar residente"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al actualizar fiel"), nil, c, http.StatusInternalServerError)
 		return
 	}
 
@@ -262,7 +201,7 @@ func UpdateFiel(c *gin.Context) {
 }
 
 func UpdateTokenNotificacion(c *gin.Context) {
-	idFiel := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_fiel")
 	res := &models.Fiel{}
 	err := c.ShouldBindJSON(res)
 	if err != nil {
@@ -281,15 +220,15 @@ func UpdateTokenNotificacion(c *gin.Context) {
 func GetFielPorId(c *gin.Context) {
 	res := &models.Fiel{}
 	id := c.Param("id")
-	err := models.Db.Where("residente.id = ?", id).Omit("usuarios.contrasena").Joins("Usuario").First(res).Error
+	err := models.Db.Where("fiel.id = ?", id).Omit("usuarios.contrasena").Joins("Usuario").First(res).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.CrearRespuesta(errors.New("residente no encontrado"), nil, c, http.StatusNotFound)
+			utils.CrearRespuesta(errors.New("Fiel no encontrado"), nil, c, http.StatusNotFound)
 			return
 		}
 
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al obtener residente"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al obtener fiel"), nil, c, http.StatusInternalServerError)
 		return
 	}
 	if res.Usuario.Imagen == "" {
@@ -299,9 +238,7 @@ func GetFielPorId(c *gin.Context) {
 			res.Usuario.Imagen = utils.SERVIMG + res.Usuario.Imagen
 		}
 	}
-	if res.Pdf != "" {
-		res.Pdf = "https://api.practical.com.ec/public/pdf/" + res.Pdf
-	}
+
 	utils.CrearRespuesta(nil, res, c, http.StatusOK)
 }
 
@@ -314,36 +251,6 @@ func DeleteFiel(c *gin.Context) {
 		return
 	}
 	utils.CrearRespuesta(nil, "Fiel borrado exitosamente", c, http.StatusOK)
-}
-
-func GetFielsPorCasa(c *gin.Context) {
-	casa := &models.Casa{}
-	id := c.Param("id")
-	err := models.Db.Preload("Fiels").Preload("Fiels.Usuario").First(casa, id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.CrearRespuesta(errors.New("Casa no encontrada"), nil, c, http.StatusNotFound)
-			return
-		}
-		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al obtener casa"), nil, c, http.StatusInternalServerError)
-		return
-	}
-	if casa.Imagen == "" {
-		casa.Imagen = utils.DefaultEtapa
-	} else {
-		casa.Imagen = utils.SERVIMG + casa.Imagen
-	}
-
-	for _, residente := range casa.Fiels {
-		if residente.Usuario.Imagen == "" {
-			residente.Usuario.Imagen = utils.DefaultUser
-		} else {
-			residente.Usuario.Imagen = utils.SERVIMG + residente.Usuario.Imagen
-		}
-	}
-
-	utils.CrearRespuesta(nil, casa, c, http.StatusOK)
 }
 
 func CambiarContrasenaFiel(c *gin.Context) {

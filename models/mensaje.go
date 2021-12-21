@@ -12,11 +12,11 @@ type Mensaje struct {
 	ImagenesArray []string            `json:"imagenes" gorm:"-"`
 	Estado        string              `gorm:"default:'NO_LEIDO'; gorm:type:enum('NO_LEIDO', 'LEIDO')"`
 	AutorID       uint                `json:"id_usuario"`
-	ParroquiaID   uint                `json:"id_etapa"`
+	ParroquiaID   uint                `json:"id_parroquia"`
 	NoticiaID     *uint               `json:"id_noticia"`
 	Autor         *Usuario            `json:"autor"`
 	Noticia       *Publicacion        `json:"noticia"`
-	Etapa         *Etapa              `json:"etapa"`
+	Parroquia     *Parroquia          `json:"parroquia_id"`
 	Respuestas    []*RespuestaMensaje `json:"respuestas"`
 }
 

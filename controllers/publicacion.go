@@ -31,22 +31,6 @@ func GetPublicacions(c *gin.Context) {
 		return
 	}
 	for _, publicacion := range publicacions {
-		if publicacion.Usuario.Imagen == "" {
-			publicacion.Usuario.Imagen = utils.DefaultNoticia
-		} else {
-			publicacion.Usuario.Imagen = utils.SERVIMG + publicacion.Usuario.Imagen
-		}
-		publicacion.Leido = true
-		err = models.Db.Where("usuario_id = ? and publicacion_id = ?", c.GetInt("id_usuario"), publicacion.ID).First(&models.LecturaPublicacion{}).Error
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				publicacion.Leido = false
-			} else {
-				_ = c.Error(err)
-				utils.CrearRespuesta(errors.New("Error al obtener publicaciones"), nil, c, http.StatusInternalServerError)
-				return
-			}
-		}
 		for _, img := range publicacion.ImagenesPublicacion {
 			if img.Imagen != "" {
 				img.Imagen = utils.SERVIMG + img.Imagen
@@ -78,11 +62,9 @@ func GetPublicacionPorId(c *gin.Context) {
 			img.Imagen = utils.DefaultNoticia
 		}
 	}
-	publicacion.Leido = true
 	err = models.Db.Where("usuario_id = ? and publicacion_id = ?", c.GetInt("id_usuario"), publicacion.ID).First(&models.LecturaPublicacion{}).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			publicacion.Leido = false
 		} else {
 			_ = c.Error(err)
 			utils.CrearRespuesta(errors.New("Error al obtener publicaciones"), nil, c, http.StatusInternalServerError)
@@ -99,11 +81,9 @@ type MediaPublicacion struct {
 }
 
 func CreatePublicacionMedia(c *gin.Context) {
-	idUsuario := c.GetInt("id_usuario")
 
 	idParroquia := uint(c.GetInt("id_etapa"))
 	publicacion := &models.Publicacion{}
-	publicacion.UsuarioID = uint(idUsuario)
 	publicacion.ParroquiaID = idParroquia
 	// }
 	form, _ := c.MultipartForm()
@@ -121,8 +101,6 @@ func CreatePublicacionMedia(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Por favor ingrese decripcion"), nil, c, http.StatusBadRequest)
 		return
 	}
-	publicacion.Titulo = titulo[0]
-	publicacion.Cuerpo = cuerpo[0]
 	err = tx.Create(publicacion).Error
 	if err != nil {
 		tx.Rollback()
@@ -199,11 +177,9 @@ func CreatePublicacionMedia(c *gin.Context) {
 }
 
 func CreatePublicacion(c *gin.Context) {
-	idUsuario := c.GetInt("id_usuario")
 	idParroquia := uint(c.GetInt("id_etapa"))
 	publicacion := &models.Publicacion{}
 	err := c.ShouldBindJSON(publicacion)
-	publicacion.UsuarioID = uint(idUsuario)
 	publicacion.ParroquiaID = idParroquia
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
