@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/drmendoz/iglesias-backend/models"
@@ -15,7 +16,7 @@ import (
 
 func GetParroquias(c *gin.Context) {
 	etps := []*models.Parroquia{}
-	err := models.Db.Order("Nombre ASC").Preload("Iglesia").Find(&etps).Error
+	err := models.Db.Order("Nombre ASC").Preload("Iglesia").Preload("Modulos").Find(&etps).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener parroquias"), nil, c, http.StatusInternalServerError)
@@ -35,7 +36,7 @@ func GetParroquias(c *gin.Context) {
 func GetParroquiaPorId(c *gin.Context) {
 	etp := &models.Parroquia{}
 	id := c.Param("id")
-	err := models.Db.First(etp, id).Error
+	err := models.Db.Preload("Iglesia").Preload("Modulos").First(etp, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.CrearRespuesta(errors.New("Parroquia no encontrada"), nil, c, http.StatusNotFound)
@@ -106,7 +107,10 @@ func UpdateParroquia(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
+	idPar, _ := strconv.Atoi(id)
+	etp.ID = uint(idPar)
 	tx := models.Db.Begin()
+
 	err = tx.Omit("imagen").Where("id = ?", id).Updates(etp).Error
 	if err != nil {
 		_ = c.Error(err)
@@ -114,31 +118,6 @@ func UpdateParroquia(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	// err = tx.Model(etp).Where("id = ?", id).Updates(map[string]interface{}{
-	// 	"pagos_tarjeta":         etp.PagosTarjeta,
-	// 	"modulo_market":         etp.ModuloMarket,
-	// 	"modulo_publicacion":    etp.ModuloPublicacion,
-	// 	"modulo_votacion":       etp.ModuloVotacion,
-	// 	"modulo_area_social":    etp.ModuloAreaSocial,
-	// 	"modulo_equipo":         etp.ModuloEquipoAdministrativo,
-	// 	"modulo_historia":       etp.ModuloHistoria,
-	// 	"modulo_bitacora":       etp.ModuloBitacora,
-	// 	"formulario_entrada":    etp.FormularioEntrada,
-	// 	"formulario_salida":     etp.FormularioSalida,
-	// 	"modulo_alicuota":       etp.ModuloAlicuota,
-	// 	"modulo_emprendimiento": etp.ModuloEmprendimiento,
-	// 	"modulo_camaras":        etp.ModuloCamaras,
-	// 	"modulo_directiva":      etp.ModuloDirectiva,
-	// 	"modulo_galeria":        etp.ModuloGaleria,
-	// 	"modulo_horarios":       etp.ModuloHorarios,
-	// 	"modulo_mi_registro":    etp.ModuloMiRegistro}).Error
-
-	// if err != nil {
-	// 	_ = c.Error(err)
-	// 	tx.Rollback()
-	// 	utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
-	// 	return
-	// }
 	if etp.Imagen != "" {
 		idUrb := fmt.Sprintf("%d", etp.ID)
 		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "parroquias/"+time.RFC3339+idUrb, false)
