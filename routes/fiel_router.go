@@ -32,7 +32,9 @@ func FielRouter(r *gin.RouterGroup) {
 	res.PUT("/emprendimientos/:id", controllers.ActualizarEmprendimiento)
 	res.DELETE("/emprendimientos/:id", controllers.DeleteEmprendimiento)
 	res.POST("/cerrar-sesion", controllers.CerrarSesion)
+	res.GET("/misas", controllers.GetMisas)
 	historiaRoutes(res)
 	tarjetaRoutes(res)
 	respuestaRoutes(res)
+	intencionRoutes(res)
 }
