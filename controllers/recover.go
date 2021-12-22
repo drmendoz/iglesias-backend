@@ -28,18 +28,12 @@ func EnviarCodigoTemporal(c *gin.Context) {
 		err = models.Db.Where("Usuario.usuario= ?", usuarioTemp.Usuario).Joins("Usuario").First(admin).Error
 
 		usuario = admin.Usuario
-	case "residente":
+	case "fiel":
 		res := &models.Fiel{}
 		err = models.Db.Where("Usuario.usuario= ?", usuarioTemp.Usuario).Joins("Usuario").First(res).Error
 
 		usuario = res.Usuario
-	case "admin-garita":
-		admin := &models.AdminGarita{}
-		err = models.Db.Where("Usuario.usuario= ?", usuarioTemp.Usuario).Joins("Usuario").First(admin).Error
-
-		usuario = admin.Usuario
-
-	case "admin-etapa":
+	case "admin-parroquia":
 		admin := &models.AdminParroquia{}
 		err = models.Db.Where("Usuario.usuario= ?", usuarioTemp.Usuario).Joins("Usuario").First(admin).Error
 
@@ -68,7 +62,7 @@ func EnviarCodigoTemporal(c *gin.Context) {
 	err = mail.EnviarCorreoRecover(*usuario)
 	if err != nil {
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al enviar correo. Por favor comuniquese con administracion"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al enviar correo. Por favor comuniquese con soporte"), nil, c, http.StatusInternalServerError)
 		return
 	}
 	utils.CrearRespuesta(nil, "Se envio un codigo temporal al correo electronico "+usuario.Correo, c, http.StatusOK)
@@ -88,16 +82,11 @@ func CambioDeContrasena(c *gin.Context) {
 		admin := &models.AdminMaster{}
 		err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(admin).Error
 		usuario = admin.Usuario
-	case "residente":
+	case "fiel":
 		res := &models.Fiel{}
 		err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(res).Error
 		usuario = res.Usuario
-	case "admin-garita":
-		admin := &models.AdminGarita{}
-		err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(admin).Error
-		usuario = admin.Usuario
-
-	case "admin-etapa":
+	case "admin-parroquia":
 		admin := &models.AdminParroquia{}
 		err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(admin).Error
 		usuario = admin.Usuario
