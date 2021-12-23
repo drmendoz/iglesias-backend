@@ -55,10 +55,11 @@ func migrarTablas() {
 	err := Db.AutoMigrate(&Usuario{}, &AdminMaster{}, &AdminParroquia{}, &Fiel{}, &Parroquia{}, &Iglesia{},
 		&AdminMasterPermiso{}, &AdminParroquiaPermiso{}, &ModulosParroquia{}, &CategoriaMarket{},
 		&Emprendimiento{}, &EmprendimientoImagen{}, &CategoriaDonacion{}, &Donacion{}, &Aportacion{},
-		&Transaccion{}, &FielTarjeta{}, &ModulosParroquia{}, &Padre{}, &Misa{}, &Intencion{})
-
-	utils.Log.Warn(err)
-	utils.Log.Fatal("Error al migrar modelos")
+		&Transaccion{}, &FielTarjeta{}, &ModulosParroquia{}, &Padre{}, &Misa{}, &Intencion{}, &Curso{}, &Inscrito{},
+		&Actividad{}, &Horario{}, &HorarioEntrada{}, &Musica{})
+	if err != nil {
+		utils.Log.Fatal("Error al migrar modelos", err)
+	}
 
 }
 

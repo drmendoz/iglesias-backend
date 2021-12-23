@@ -26,6 +26,7 @@ var DefaultCasa string
 var DefaultCam string
 var DefaultCategoria string
 var DefaultEmprendimiento string
+var DefaultHorario string
 var Colores = map[int]string{1: "#7875EA", 2: "#6C69D1", 3: "#5855AB", 4: "#37366B"}
 var CamServer string
 var NumeroMaximoEmprendimiento int
@@ -63,6 +64,7 @@ func init() {
 	DefaultCasa = Viper.GetString("DEFAULT_CASA")
 	CamServer = Viper.GetString("CAM_SERVER")
 	DefaultCam = Viper.GetString("DEFAULT_CAM")
+	DefaultHorario = Viper.GetString("DEFAULT_HORARIO")
 	DefaultCategoria = Viper.GetString("DEFAULT_CAT")
 	RutaTutorial = Viper.GetString("RUTA_TUTORIAL")
 	PaymentezAppCode = Viper.GetString("PAYMENTEZ_APP_CODE")

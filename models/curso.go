@@ -15,6 +15,7 @@ type Curso struct {
 	FechaFin    string      `json:"fecha_fin"`
 	Precio      float64     `json:"precio"`
 	TieneLimite bool        `json:"tiene_limite" `
+	BotonPago   bool        `json:"boton_pago"`
 	Cupo        int         `json:"cupo"`
 	Inscritos   []*Inscrito `json:"inscritos"`
 }

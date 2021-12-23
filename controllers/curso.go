@@ -16,7 +16,7 @@ import (
 func GetCursos(c *gin.Context) {
 	etps := []*models.Curso{}
 	idParroquia := c.GetInt("id_parroquia")
-	err := models.Db.Where(&models.Curso{ParroquiaID: uint(idParroquia)}).Order("created_at asc").Find(&etps).Error
+	err := models.Db.Where(&models.Curso{ParroquiaID: uint(idParroquia)}).Preload("Inscritos").Order("created_at asc").Find(&etps).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener areas sociales"), nil, c, http.StatusInternalServerError)
@@ -28,10 +28,10 @@ func GetCursos(c *gin.Context) {
 func GetCursoPorID(c *gin.Context) {
 	etp := &models.Curso{}
 	id := c.Param("id")
-	err := models.Db.Preload("Aportaciones").Preload("Aportaciones.Fiel").Preload("Aportaciones.Transaccion").First(etp, id).Error
+	err := models.Db.Preload("Inscritos").First(etp, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.CrearRespuesta(errors.New("Doncacion no encontrada"), nil, c, http.StatusNotFound)
+			utils.CrearRespuesta(errors.New("Curso no encontrado"), nil, c, http.StatusNotFound)
 			return
 		}
 		_ = c.Error(err)
@@ -124,6 +124,8 @@ func InscribirCurso(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al inscribir a curso"), nil, c, http.StatusInternalServerError)
 		return
 	}
+	inscrito.FielID = uint(idFiel)
+	inscrito.CursoID = uint(idCurso)
 	if curso.TieneLimite {
 		var cupos int64
 		err = tx.Model(&models.Inscrito{}).Where(&models.Inscrito{CursoID: uint(idCurso)}).Count(&cupos).Error
@@ -138,6 +140,18 @@ func InscribirCurso(c *gin.Context) {
 			utils.CrearRespuesta(errors.New("Ya no hay cupo para este curso"), nil, c, http.StatusNotAcceptable)
 		}
 	}
+	if !curso.BotonPago {
+		err = tx.Create(inscrito).Error
+		if err != nil {
+			_ = tx.Rollback()
+			_ = c.Error(err)
+			utils.CrearRespuesta(errors.New("Error al inscribir a curso"), nil, c, http.StatusInternalServerError)
+			return
+		}
+		_ = tx.Commit()
+		utils.CrearRespuesta(nil, "Inscripcion exitosa", c, http.StatusOK)
+		return
+	}
 
 	if inscrito.TokenTarjeta == "" {
 		_ = tx.Rollback()
@@ -145,8 +159,7 @@ func InscribirCurso(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Ingrese tarjeta de credito"), nil, c, http.StatusNotAcceptable)
 		return
 	}
-	inscrito.FielID = uint(idFiel)
-	inscrito.CursoID = uint(idCurso)
+	inscrito.Monto = curso.Precio
 	fiel := &models.Fiel{}
 	err = tx.Joins("Usuario").Find(fiel, idFiel).Error
 	if err != nil {
@@ -155,27 +168,13 @@ func InscribirCurso(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	tarjeta := &models.FielTarjeta{}
-	err = tx.Where("token_tarjeta = ?", inscrito.TokenTarjeta).First(tarjeta).Error
+	tarjeta := &models.FielTarjeta{TokenTarjeta: inscrito.TokenTarjeta, FielID: uint(idFiel)}
+	err = tx.FirstOrCreate(tarjeta).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			tarjeta.TokenTarjeta = inscrito.TokenTarjeta
-			tarjeta.FielID = uint(idFiel)
-			err = tx.Create(&tarjeta).Error
-			if err != nil {
-				tx.Rollback()
-				_ = c.Error(err)
-				utils.CrearRespuesta(errors.New("Error con tarjeta"), nil, c, http.StatusInternalServerError)
-				return
-			}
-		} else {
-
-			tx.Rollback()
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
-			return
-
-		}
+		tx.Rollback()
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
+		return
 	}
 	inscrito.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID}
 	err = tx.Create(inscrito).Error
