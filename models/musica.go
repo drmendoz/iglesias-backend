@@ -8,6 +8,8 @@ type Musica struct {
 	Compositor  string     `json:"compositor"`
 	Telefono    string     `json:"telefono"`
 	Media       string     `json:"media"`
+	FielID      uint       `json:"id_fiel"`
+	Fiel        *Fiel      `json:"fiel"`
 	ParroquiaID uint       `json:"id_parroquia"`
 	Parroquia   *Parroquia `json:"parroquia"`
 	Estado      string     `json:"estado" gorm:"type:enum('PEN','PUB')"`

@@ -11,12 +11,13 @@ import (
 )
 
 func GetMusicas(c *gin.Context) {
+	estado := c.Query("estado")
 	etps := []*models.Musica{}
 	idParroquia := c.GetInt("id_parroquia")
-	err := models.Db.Where(&models.Musica{ParroquiaID: uint(idParroquia)}).Order("created_at asc").Find(&etps).Error
+	err := models.Db.Where(&models.Musica{ParroquiaID: uint(idParroquia), Estado: estado}).Order("created_at asc").Find(&etps).Error
 	if err != nil {
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al obtener areas sociales"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al obtener musicas"), nil, c, http.StatusInternalServerError)
 		return
 	}
 
@@ -26,18 +27,36 @@ func GetMusicas(c *gin.Context) {
 func GetMusicaPorID(c *gin.Context) {
 	etp := &models.Musica{}
 	id := c.Param("id")
-	err := models.Db.Preload("Aportaciones").Preload("Aportaciones.Fiel").Preload("Aportaciones.Transaccion").First(etp, id).Error
+	err := models.Db.First(etp, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.CrearRespuesta(errors.New("Doncacion no encontrada"), nil, c, http.StatusNotFound)
+			utils.CrearRespuesta(errors.New("Musica no encontrada"), nil, c, http.StatusNotFound)
 			return
 		}
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al obtener donacion"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al obtener musica"), nil, c, http.StatusInternalServerError)
 		return
 	}
 
 	utils.CrearRespuesta(nil, etp, c, http.StatusOK)
+}
+
+func GetMusicaDeUsuario(c *gin.Context) {
+
+	etps := []*models.Musica{}
+	idFiel := c.GetInt("id_fiel")
+	err := models.Db.Where("fiel_id = ?", idFiel).Order("created_at asc").Find(&etps).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.CrearRespuesta(errors.New("Musica no encontrada"), nil, c, http.StatusNotFound)
+			return
+		}
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener musica"), nil, c, http.StatusInternalServerError)
+		return
+	}
+
+	utils.CrearRespuesta(nil, etps, c, http.StatusOK)
 }
 
 func CreateMusica(c *gin.Context) {
@@ -49,13 +68,14 @@ func CreateMusica(c *gin.Context) {
 		return
 	}
 	etp.ParroquiaID = idParroquia
+	etp.Estado = "PEN"
 
 	tx := models.Db.Begin()
 	err = tx.Create(etp).Error
 	if err != nil {
 		tx.Rollback()
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al crear donacion"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al crear musica"), nil, c, http.StatusInternalServerError)
 		return
 	}
 
@@ -78,7 +98,7 @@ func UpdateMusica(c *gin.Context) {
 	if err != nil {
 		tx.Rollback()
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al actualizar donacion"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al actualizar musica"), nil, c, http.StatusInternalServerError)
 		return
 	}
 	tx.Commit()
