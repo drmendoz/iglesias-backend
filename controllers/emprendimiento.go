@@ -12,7 +12,6 @@ import (
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
 	"github.com/drmendoz/iglesias-backend/utils/img"
-	"github.com/drmendoz/iglesias-backend/utils/tiempo"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -27,47 +26,29 @@ type EmprendimientoResponse struct {
 var p = message.NewPrinter(language.English)
 
 func CreateEmprendimiento(c *gin.Context) {
-	idFiel := uint(c.GetInt("id_residente"))
-	idParroquia := uint(c.GetInt("id_etapa"))
+	idFiel := uint(c.GetInt("id_fiel"))
+	idParroquia := uint(c.GetInt("id_parroquia"))
 	item := &models.Emprendimiento{}
 	err := c.ShouldBindJSON(item)
 	if err != nil {
 		utils.CrearRespuesta(errors.New("Error en formato de solicitud"), nil, c, http.StatusBadRequest)
 		return
 	}
+	tx := models.Db.Begin()
 	item.EmprendimientoImagenes = []*models.EmprendimientoImagen{}
 	for _, imagen := range item.Imagenes {
 		empImagen := &models.EmprendimientoImagen{Imagen: imagen}
 		item.EmprendimientoImagenes = append(item.EmprendimientoImagenes, empImagen)
 	}
-	// suscrito, err := verificarSuscripcion(idFiel)
-	// if err != nil {
-	// 	_ = c.Error(err)
-	// 	utils.CrearRespuesta(errors.New("Error al crear emprendimiento"), nil, c, http.StatusInternalServerError)
-	// 	return
-	// }
-	fechaActual := time.Now().In(tiempo.Local)
-	fechaFin := fechaActual.AddDate(0, 1, 0)
-	var numEmp int64
-	err = models.Db.Model(&models.Emprendimiento{}).Where("fecha_publicacion < ?", fechaActual).Where("fecha_vencimiento > ?", fechaActual).Where("residente_id = ?", idFiel).Count(&numEmp).Error
+	parroquia := &models.Parroquia{}
+	err = tx.First(&parroquia, idParroquia).Error
 	if err != nil {
+		_ = tx.Rollback()
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al crear emprendimiento"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	//if suscrito {
-	if numEmp == int64(utils.NumeroMaximoEmprendimiento) {
-		utils.CrearRespuesta(errors.New("Ha alcanzado el limite de emprendimientos mensuales"), nil, c, http.StatusNotAcceptable)
-		return
 
-	}
-	//} else {
-	//	if numEmp == 1 {
-	//		utils.CrearRespuesta(errors.New("Ha alcanzado el limite de emprendimientos mensuales"), nil, c, http.StatusNotAcceptable)
-	//		return
-
-	//	}
-	//}
 	if item.PrecioLabel != "" {
 		item.Precio, err = strconv.ParseFloat(item.PrecioLabel, 64)
 		if err != nil {
@@ -75,33 +56,17 @@ func CreateEmprendimiento(c *gin.Context) {
 			return
 		}
 	}
-	item.FechaPublicacion = fechaActual
-	item.FechaVencimiento = fechaFin
 	item.ParroquiaID = idParroquia
 	item.FielID = idFiel
-	//count := 0
-	// for _, imagen := range item.Imagenes {
-	// 	empImagen := &models.EmprendimientoImagen{}
-	// 	if imagen != "" {
-	// 		ct := fmt.Sprintf("%d", count)
-	// 		imagen, err = img.FromBase64ToImage(imagen, "emprendimientos/"+time.Now().Format(time.RFC3339)+ct)
-	// 		if err != nil {
-	// 			_ = c.Error(err)
-	// 			utils.CrearRespuesta(errors.New("Error en formato de imagen"), nil, c, http.StatusOK)
-	// 			return
-	// 		}
-	// 	}
-	// 	count++
-	// 	empImagen.Imagen = imagen
-	// 	item.EmprendimientoImagenes = append(item.EmprendimientoImagenes, empImagen)
-	// }
-	err = models.Db.Create(item).Error
+	err = tx.Create(item).Error
 	if err != nil {
+		_ = tx.Rollback()
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al crear item"), nil, c, http.StatusInternalServerError)
 		return
 	}
 
+	_ = tx.Commit()
 	utils.CrearRespuesta(err, "Emprendimiento creado correctamente", c, http.StatusCreated)
 
 }
@@ -158,7 +123,7 @@ func DeleteEmprendimiento(c *gin.Context) {
 }
 
 func ObtenerEmprendimientos(c *gin.Context) {
-	idParroquia := c.GetInt("id_etapa")
+	idParroquia := c.GetInt("id_parroquia")
 	filtro := c.Query("filtro")
 	categoria := c.Query("id_categoria")
 	idCat := 0
@@ -175,10 +140,9 @@ func ObtenerEmprendimientos(c *gin.Context) {
 	emps := &EmprendimientoResponse{}
 	emps.Cercas = []*models.Emprendimiento{}
 	emps.Recomendados = []*models.Emprendimiento{}
-	fechaActual := time.Now().In(tiempo.Local)
 
 	//Recomendados
-	err = models.Db.Where("estado = ?", "VIG").Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat)}).Where("fecha_publicacion < ?", fechaActual).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
+	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat)}).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id", "imagen", "telefono", "usuario", "telefono")
 	}).Order("created_at desc").Find(&emps.Recomendados).Error
 	if err != nil {
@@ -188,7 +152,7 @@ func ObtenerEmprendimientos(c *gin.Context) {
 	}
 
 	//Cercas
-	err = models.Db.Where("estado = ?", "VIG").Order("premium ASC").Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), ParroquiaID: uint(idParroquia)}).Where("fecha_publicacion < ?", fechaActual).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
+	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), ParroquiaID: uint(idParroquia)}).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id", "imagen", "telefono", "usuario")
 	}).Order("created_at desc").Find(&emps.Cercas).Error
 	if err != nil {
@@ -201,17 +165,17 @@ func ObtenerEmprendimientos(c *gin.Context) {
 		// emp.Descripcion = re.ReplaceAllString(emp.Descripcion, ".\n")
 		emp.PrecioLabel = p.Sprintf("%.0f", emp.Precio)
 		if emp.EmprendimientoImagenes == nil {
-			emp.Imagen = utils.DefaultAreaSocial
+			emp.Imagen = utils.DefaultEmprendimiento
 		} else {
 			if len(emp.EmprendimientoImagenes) > 0 {
 				if emp.EmprendimientoImagenes[0].Imagen == "" {
-					emp.Imagen = utils.DefaultAreaSocial
+					emp.Imagen = utils.DefaultEmprendimiento
 				} else {
 
 					emp.Imagen = emp.EmprendimientoImagenes[0].Imagen
 				}
 			} else {
-				emp.Imagen = utils.DefaultAreaSocial
+				emp.Imagen = utils.DefaultEmprendimiento
 			}
 
 		}
@@ -225,7 +189,7 @@ func ObtenerEmprendimientos(c *gin.Context) {
 		emp.Imagenes = []string{}
 		for _, img := range emp.EmprendimientoImagenes {
 			if img.Imagen == "" {
-				img.Imagen = utils.DefaultAreaSocial
+				img.Imagen = utils.DefaultEmprendimiento
 			}
 			emp.Imagenes = append(emp.Imagenes, img.Imagen)
 		}
@@ -236,18 +200,18 @@ func ObtenerEmprendimientos(c *gin.Context) {
 		// emp.Descripcion = re.ReplaceAllString(emp.Descripcion, ".\n")
 		emp.PrecioLabel = p.Sprintf("%.0f", emp.Precio)
 		if emp.EmprendimientoImagenes == nil {
-			emp.Imagen = utils.DefaultAreaSocial
+			emp.Imagen = utils.DefaultEmprendimiento
 		} else {
 			if len(emp.EmprendimientoImagenes) > 0 {
 				if emp.EmprendimientoImagenes[0].Imagen == "" {
-					emp.Imagen = utils.DefaultAreaSocial
+					emp.Imagen = utils.DefaultEmprendimiento
 				} else {
 
 					emp.Imagen = emp.EmprendimientoImagenes[0].Imagen
 				}
 			} else {
 
-				emp.Imagen = utils.DefaultAreaSocial
+				emp.Imagen = utils.DefaultEmprendimiento
 			}
 		}
 		if emp.Fiel.Usuario.Imagen != "" {
@@ -259,7 +223,7 @@ func ObtenerEmprendimientos(c *gin.Context) {
 		emp.NombreUsuario = emp.Fiel.Usuario.Usuario
 		for _, img := range emp.EmprendimientoImagenes {
 			if img.Imagen == "" {
-				img.Imagen = utils.DefaultAreaSocial
+				img.Imagen = utils.DefaultEmprendimiento
 			}
 			emp.Imagenes = append(emp.Imagenes, img.Imagen)
 		}
@@ -271,11 +235,7 @@ func ObtenerEmprendimientos(c *gin.Context) {
 func ObtenerEmprendimientosPorId(c *gin.Context) {
 	idEmprendimiento := c.Param("id")
 	emp := &models.Emprendimiento{}
-	err := models.Db.Where("estado = 'VIG'").Preload("EmprendimientoImagenes").Preload("Fiel", func(tx *gorm.DB) *gorm.DB {
-		return tx.Select("id", "usuario_id")
-	}).Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
-		return tx.Select("id", "usuario", "telefono", "imagen")
-	}).First(&emp, idEmprendimiento).Error
+	err := models.Db.Preload("EmprendimientoImagenes").Preload("Fiel").Preload("Fiel.Usuario").First(&emp, idEmprendimiento).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.CrearRespuesta(errors.New("Emprendimiento no encontrado"), nil, c, http.StatusNotFound)
@@ -298,6 +258,8 @@ func ObtenerEmprendimientosPorId(c *gin.Context) {
 		if !strings.HasPrefix(emp.Fiel.Usuario.Imagen, "https://") {
 			emp.ImagenUsuario = utils.SERVIMG + emp.Fiel.Usuario.Imagen
 		}
+	} else {
+		emp.ImagenUsuario = utils.DefaultUser
 	}
 	emp.Fiel = nil
 	utils.CrearRespuesta(nil, emp, c, http.StatusOK)
@@ -318,10 +280,9 @@ func ObtenerEmprendimientosUsuarios(c *gin.Context) {
 		}
 	}
 
-	fechaActual := time.Now().In(tiempo.Local)
 	emps := []*models.Emprendimiento{}
 
-	err = models.Db.Where("estado = ?", "VIG").Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), FielID: idFiel}).Where("fecha_vencimiento > ?", fechaActual).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Order("created_at desc").Find(&emps).Error
+	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), FielID: idFiel}).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Order("created_at desc").Find(&emps).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener emprendimientos"), nil, c, http.StatusInternalServerError)
@@ -332,10 +293,10 @@ func ObtenerEmprendimientosUsuarios(c *gin.Context) {
 
 		emp.PrecioLabel = fmt.Sprintf("%.2f", emp.Precio)
 		if emp.EmprendimientoImagenes != nil {
-			emp.Imagen = utils.DefaultAreaSocial
+			emp.Imagen = utils.DefaultEmprendimiento
 		} else {
 			if emp.EmprendimientoImagenes[0].Imagen == "" {
-				emp.Imagen = utils.DefaultAreaSocial
+				emp.Imagen = utils.DefaultEmprendimiento
 			} else {
 
 				emp.Imagen = emp.EmprendimientoImagenes[0].Imagen
@@ -386,9 +347,8 @@ func ObtenerEmprendimientoFiel(c *gin.Context) {
 	} else {
 		res.Usuario.Imagen = utils.DefaultUser
 	}
-	fechaActual := time.Now().In(tiempo.Local)
 	emps := []*models.Emprendimiento{}
-	err = models.Db.Where("estado = 'VIG'").Where("residente_id = ?", idFiel).Where("fecha_publicacion < ?", fechaActual).Where("fecha_vencimiento > ?", fechaActual).Preload("EmprendimientoImagenes").Order("created_at desc").Find(&emps).Error
+	err = models.Db.Where("estado = 'VIG'").Where("fiel_id = ?", idFiel).Preload("EmprendimientoImagenes").Order("created_at desc").Find(&emps).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.CrearRespuesta(errors.New("Emprendimiento no encontrado"), nil, c, http.StatusNotFound)

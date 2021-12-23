@@ -6,7 +6,7 @@ import (
 )
 
 func categoriaMarketRoutes(r *gin.RouterGroup) {
-	admin := r.Group("categoria")
+	admin := r.Group("categorias")
 	//admin.Use(middlewares.RolMasterMiddleware())
 	//admin.Use(middlewares.AuthMiddleWare())
 	admin.GET("", controllers.GetCategoriaMarkets)

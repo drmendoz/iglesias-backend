@@ -11,6 +11,7 @@ func administradorMasterRouter(r *gin.RouterGroup) {
 	administradorMasterRoutes(admin)
 	administradorParroquiaRoutes(admin)
 	categoriaMarketRoutes(admin)
+	categoriaDonacionRoutes(admin)
 	parroquiaRoutes(admin)
 	pagosMarketRoutes(admin)
 	publicidadRoutes(admin)

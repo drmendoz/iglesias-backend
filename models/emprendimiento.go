@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
@@ -21,16 +19,15 @@ type Emprendimiento struct {
 	Ciudad                 string                  `json:"ciudad"`
 	EmprendimientoImagenes []*EmprendimientoImagen `json:"-" `
 	Imagenes               []string                `json:"imagenes" gorm:"-"`
-	FechaPublicacion       time.Time               `json:"fecha_publicacion"`
-	FechaVencimiento       time.Time               `json:"fecha_vencimiento"`
-	FielID                 uint                    `json:"id_fiel"`
-	ParroquiaID            uint                    `json:"id_parroquia"`
-	TransaccionID          uint                    `json:"id_transaccion"`
-	CategoriaMarketID      uint                    `json:"id_categoria"`
-	CategoriaMarket        *CategoriaMarket        `json:"categoria,omitempty"`
-	Transaccion            *Transaccion            `json:"transaccion,omitempty"`
-	Parroquia              *Parroquia              `json:"parroquia,omitempty"`
-	Fiel                   *Fiel                   `json:"fiel,omitempty"`
+	//FechaPublicacion       time.Time               `json:"fecha_publicacion"`
+	//	FechaVencimiento       time.Time               `json:"fecha_vencimiento"`
+	FielID            uint             `json:"id_fiel"`
+	ParroquiaID       uint             `json:"id_parroquia"`
+	Transaccion       *Transaccion     `json:"transaccion" gorm:"polymorphic:TipoPago"`
+	CategoriaMarketID uint             `json:"id_categoria"`
+	CategoriaMarket   *CategoriaMarket `json:"categoria,omitempty"`
+	Parroquia         *Parroquia       `json:"parroquia,omitempty"`
+	Fiel              *Fiel            `json:"fiel,omitempty"`
 }
 
 func (Emprendimiento) TableName() string {

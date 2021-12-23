@@ -10,7 +10,9 @@ type Transaccion struct {
 	CodigoAutorizacion string       `json:"codigo_autorizacion"`
 	Mensaje            string       `json:"mensaje"`
 	Descripcion        string       `json:"descripcion"`
-	Tipo               string       `json:"tipo" gorm:"default:'VAR';type:enum('VAR','ALI','RES')"`
+	TipoPagoID         uint         `json:"id_tipo_pago"`
+	TipoPagoType       string       `json:"tipo_pago"`
+	CategoriaID        uint         `json:"id_categoria"`
 	EstadoDevolucion   string       `json:"estado_devolucion"`
 	DetalleDevolucion  string       `json:"detalle_devolucion"`
 	FielTarjetaID      uint         `json:"tarjeta_id"`

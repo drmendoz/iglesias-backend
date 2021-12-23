@@ -20,4 +20,5 @@ func administradorParroquiaRouter(r *gin.RouterGroup) {
 	respuestaRoutes(admin)
 	permisoRoutes(admin)
 	categoriaMarketRoutes(admin)
+	donacionRoutes(admin)
 }

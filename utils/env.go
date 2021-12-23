@@ -17,14 +17,15 @@ var DefaultParroquia string
 var DefaultAdministrativo string
 var DefaultVisita string
 var DefaultGaleria string
-var DefaultExpreso string
+var DefaultCurso string
 var DefaultVotacion string
 var DefaultMensaje string
 var DefaultPublicidad string
-var DefaultAreaSocial string
+var DefaultDonacion string
 var DefaultCasa string
 var DefaultCam string
 var DefaultCategoria string
+var DefaultEmprendimiento string
 var Colores = map[int]string{1: "#7875EA", 2: "#6C69D1", 3: "#5855AB", 4: "#37366B"}
 var CamServer string
 var NumeroMaximoEmprendimiento int
@@ -54,10 +55,11 @@ func init() {
 	DefaultVisita = Viper.GetString("DEFAULT_VISITA")
 	DefaultGaleria = Viper.GetString("DEFAULT_GALERIA")
 	DefaultPublicidad = Viper.GetString("DEFAULT_PUBLICIDAD")
-	DefaultExpreso = Viper.GetString("DEFAULT_EXPRESO")
+	DefaultCurso = Viper.GetString("DEFAULT_CURSO")
 	DefaultVotacion = Viper.GetString("DEFAULT_VOTACION")
 	DefaultMensaje = Viper.GetString("DEFAULT_MENSAJE")
-	DefaultAreaSocial = Viper.GetString("DEFAULT_AREA")
+	DefaultEmprendimiento = Viper.GetString("DEFAULT_EMPRENDIMIENTO")
+	DefaultDonacion = Viper.GetString("DEFAULT_AREA")
 	DefaultCasa = Viper.GetString("DEFAULT_CASA")
 	CamServer = Viper.GetString("CAM_SERVER")
 	DefaultCam = Viper.GetString("DEFAULT_CAM")

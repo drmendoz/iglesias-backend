@@ -11,7 +11,7 @@ import (
 )
 
 func GetTarjetas(c *gin.Context) {
-	idFiel := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_fiel")
 	tarjetas, err := paymentez.GetTarjetas(int64(idFiel))
 	if err != nil {
 		_ = c.Error(err)
@@ -22,7 +22,7 @@ func GetTarjetas(c *gin.Context) {
 }
 
 func DeleteTarjeta(c *gin.Context) {
-	idFiel := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_fiel")
 	tokenTarjeta := c.Param("token")
 	res, err := paymentez.DeleteTarjeta(idFiel, tokenTarjeta)
 	if err != nil {
@@ -34,7 +34,7 @@ func DeleteTarjeta(c *gin.Context) {
 }
 
 func CobrarTarjeta(c *gin.Context) {
-	idFiel := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_fiel")
 	tokenTarjeta := c.Param("token")
 	id := fmt.Sprintf("%d", idFiel)
 	res, err := paymentez.CobrarTarjeta(id, "drmendozal98@gmail.com", 112, "Prueba", "2", 12, tokenTarjeta)
