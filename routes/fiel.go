@@ -5,11 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func residenteRoutes(r *gin.RouterGroup) {
-	admin := r.Group("residente")
-	//admin.Use(middlewares.RolMasterMiddleware())
-	//admin.Use(middlewares.AuthMiddleWare())
-	admin.GET("", controllers.GetFiel)
+func fielRoutes(r *gin.RouterGroup) {
+	admin := r.Group("fiel")
+	admin.GET("", controllers.GetFieles)
 	admin.POST("", controllers.CreateFiel)
 	admin.PUT("/:id", controllers.UpdateFiel)
 	admin.GET("/:id", controllers.GetFielPorId)

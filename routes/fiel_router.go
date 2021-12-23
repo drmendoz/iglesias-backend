@@ -35,7 +35,9 @@ func FielRouter(r *gin.RouterGroup) {
 	res.POST("/cerrar-sesion", controllers.CerrarSesion)
 	res.POST("/causas-beneficas/:id/donar", controllers.AportarDonacion)
 	res.GET("/causas-beneficas/:id", controllers.GetDonacionPorID)
+	res.GET("/misas", controllers.GetMisas)
 	historiaRoutes(res)
 	tarjetaRoutes(res)
 	respuestaRoutes(res)
+	intencionRoutes(res)
 }

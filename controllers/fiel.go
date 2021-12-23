@@ -30,30 +30,18 @@ func CreateFiel(c *gin.Context) {
 		return
 	}
 	res.Usuario.Contrasena, _ = auth.GenerarCodigoTemporal(6)
-	//fechaActual := time.Now()
-	// res.VisualizacionBitacora = &fechaActual
-	// res.VisualizacionBuzon = &fechaActual
-	// res.VisualizacionEmprendimiento = &fechaActual
-	// res.VisualizacionGaleria = &fechaActual
-	// res.VisualizacionVotacion = &fechaActual
-	// res.VisualizacionCamara = &fechaActual
-	// res.VisualizacionAlicuota = &fechaActual
-	// res.VisualizacionAreaSocial = &fechaActual
-	// res.VisualizacionAdministradores = &fechaActual
-	//res.VisualizacionReservas = &fechaActual
 	resComp := &models.Fiel{}
 	err = models.Db.Where("Usuario.usuario = ?", res.Usuario.Usuario).Joins("Usuario").Joins("Parroquia").First(&resComp).Error
 	if resComp.ID != 0 {
-		utils.CrearRespuesta(errors.New("Ya existe un fiel con ese usuario"), nil, c, http.StatusNotAcceptable)
+		utils.CrearRespuesta(errors.New("Ya existe un usuario con ese nombre de usuario"), nil, c, http.StatusNotAcceptable)
 		return
 	}
-	err = models.Db.Where("Usuario.correo = ?", res.Usuario.Correo).Joins("Usuario").Joins("Casa").First(&resComp).Error
+	err = models.Db.Where("Usuario.correo = ?", res.Usuario.Correo).Joins("Usuario").Joins("Parroquia").First(&resComp).Error
 	if resComp.ID != 0 {
-		utils.CrearRespuesta(errors.New("Ya existe un residente con ese correo"), nil, c, http.StatusNotAcceptable)
+		utils.CrearRespuesta(errors.New("Ya existe un usuario con ese correo"), nil, c, http.StatusNotAcceptable)
 		return
 	}
 	if errors.Is(gorm.ErrRecordNotFound, err) {
-
 		res.ContraHash = res.Usuario.Contrasena
 		clave := auth.HashPassword(res.Usuario.Contrasena)
 		res.Usuario.Contrasena = clave
@@ -63,7 +51,7 @@ func CreateFiel(c *gin.Context) {
 		if err != nil {
 			tx.Rollback()
 			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al crear residente"), nil, c, http.StatusInternalServerError)
+			utils.CrearRespuesta(errors.New("Error al crear fiel"), nil, c, http.StatusInternalServerError)
 			return
 		}
 
@@ -74,7 +62,7 @@ func CreateFiel(c *gin.Context) {
 			if err != nil {
 				_ = c.Error(err)
 				tx.Rollback()
-				utils.CrearRespuesta(errors.New("Error al crear residente"), nil, c, http.StatusInternalServerError)
+				utils.CrearRespuesta(errors.New("Error al crear fiel"), nil, c, http.StatusInternalServerError)
 				return
 			}
 			res.Usuario.Imagen = utils.SERVIMG + res.Usuario.Imagen
@@ -94,32 +82,27 @@ func CreateFiel(c *gin.Context) {
 
 	if err != nil {
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al crear residente"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al crear fiel"), nil, c, http.StatusInternalServerError)
 		return
 	}
 }
 
-func isNumeric(s string) bool {
-	_, err := strconv.ParseFloat(s, 64)
-	return err == nil
-}
-
-func GetFiel(c *gin.Context) {
+func GetFieles(c *gin.Context) {
 	idParroquia := c.GetInt("id_parroquia")
-	residentes := []*models.Fiel{}
+	fieles := []*models.Fiel{}
 	var err error
 	if idParroquia != 0 {
-		err = models.Db.Where("Casa.etapa_id = ?", idParroquia).Order("Casa.Manzana DESC, Casa.Villa DESC").Omit("Usuario.Contrasena").Joins("Usuario").Joins("Casa").Find(&residentes).Error
+		err = models.Db.Where("parroquia_id = ?", idParroquia).Omit("Usuario.Contrasena").Joins("Usuario").Joins("Parroquia").Find(&fieles).Error
 	} else {
 
-		err = models.Db.Omit("Usuario.Contrasena").Joins("Usuario").Joins("Casa").Find(&residentes).Error
+		err = models.Db.Omit("Usuario.Contrasena").Joins("Usuario").Joins("Parroquia").Find(&fieles).Error
 	}
 	if err != nil {
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al obtener residentes"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al obtener fieles"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	for _, usr := range residentes {
+	for _, usr := range fieles {
 		if usr.Usuario.Imagen == "" {
 			usr.Usuario.Imagen = utils.DefaultUser
 		} else {
@@ -128,7 +111,7 @@ func GetFiel(c *gin.Context) {
 			}
 		}
 	}
-	utils.CrearRespuesta(err, residentes, c, http.StatusOK)
+	utils.CrearRespuesta(err, fieles, c, http.StatusOK)
 }
 
 func UpdateFiel(c *gin.Context) {
@@ -286,7 +269,7 @@ func CambiarContrasenaFiel(c *gin.Context) {
 	utils.CrearRespuesta(nil, "Contraseña cambiada exitosamente", c, http.StatusOK)
 }
 
-func GetUFielsCount(c *gin.Context) {
+func GetUFielesCount(c *gin.Context) {
 	var res int64
 	err := models.Db.Model(&models.Fiel{}).Count(&res).Error
 	if err != nil {
@@ -298,9 +281,9 @@ func GetUFielsCount(c *gin.Context) {
 }
 
 func GetInformacionPerfil(c *gin.Context) {
-	idFiel := c.GetInt("id_residente")
+	idFiel := c.GetInt("id_fiel")
 	res := &models.Fiel{}
-	err := models.Db.Joins("Usuario").Preload("Casa").Preload("Casa.Etapa").Preload("Casa.Etapa.Urbanizacion").First(res, idFiel).Error
+	err := models.Db.Joins("Usuario").Preload("Parroquia").Preload("Parroquia.Etapa").Preload("Parroquia.Etapa.Urbanizacion").First(res, idFiel).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error interno del servidor"), nil, c, http.StatusInternalServerError)

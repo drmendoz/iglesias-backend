@@ -32,7 +32,6 @@ func GetAdministradoresParroquia(c *gin.Context) {
 			adm.Usuario.Imagen = "https://api.practical.com.ec/public/pdf/" + adm.Usuario.Imagen
 		}
 		adm.Usuario.Contrasena = ""
-
 	}
 	utils.CrearRespuesta(err, administradores, c, http.StatusOK)
 }
