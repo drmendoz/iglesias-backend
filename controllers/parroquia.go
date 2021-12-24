@@ -123,7 +123,10 @@ func UpdateParroquia(c *gin.Context) {
 			"boton_pago_matrimonio":     etp.BotonPagoMatrimonio,
 			"boton_pago_emprendimiento": etp.BotonPagoEmprendimiento,
 			"boton_pago_curso":          etp.BotonPagoCurso,
-			"boton_pago_intencion":      etp.BotonPagoIntencion}).Error
+			"boton_pago_intencion":      etp.BotonPagoIntencion,
+			"boton_pago_actividad":      etp.BotonPagoActividad,
+			"boton_pago_musica":         etp.BotonPagoMusica,
+		}).Error
 	}
 	if etp.Imagen != "" {
 		idUrb := fmt.Sprintf("%d", etp.ID)

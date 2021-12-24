@@ -19,7 +19,7 @@ import (
 func GetAdministradoresParroquia(c *gin.Context) {
 	administradores := []*models.AdminParroquia{}
 	idParroquia := c.GetInt("id_parroquia")
-	err := models.Db.Where(&models.AdminParroquia{ParroquiaID: uint(idParroquia)}).Omit("usuario.Contrasena").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
+	err := models.Db.Where(&models.AdminParroquia{ParroquiaID: uint(idParroquia)}).Omit("usuario.Contrasena").Joins("Parroquia").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener administadores"), nil, c, http.StatusInternalServerError)
