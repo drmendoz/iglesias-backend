@@ -118,6 +118,13 @@ func UpdateParroquia(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
 		return
 	}
+	if etp.BotonPagoCurso || etp.BotonPagoEmprendimiento || etp.BotonPagoIntencion || etp.BotonPagoMatrimonio {
+		err = tx.Model(&models.Parroquia{}).Where("id = ?", id).Updates(map[string]interface{}{
+			"boton_pago_matrimonio":     etp.BotonPagoMatrimonio,
+			"boton_pago_emprendimiento": etp.BotonPagoEmprendimiento,
+			"boton_pago_curso":          etp.BotonPagoCurso,
+			"boton_pago_intencion":      etp.BotonPagoIntencion}).Error
+	}
 	if etp.Imagen != "" {
 		idUrb := fmt.Sprintf("%d", etp.ID)
 		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "parroquias/"+time.RFC3339+idUrb, false)
