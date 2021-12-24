@@ -161,6 +161,32 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 				}
 			}
 		}
+		err = tx.Model(&models.AdminParroquia{}).Where("id = ?", ui).Updates(map[string]interface{}{
+			"es_master": adm.EsMaster,
+		}).Error
+		if err != nil {
+			_ = c.Error(err)
+			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
+			return
+		}
+		permisos := &models.AdminParroquiaPermiso{}
+		if adm.Permisos != *permisos {
+			err = tx.Model(&models.AdminMasterPermiso{}).Where("admin_parroquia_id = ?", ui).Updates(map[string]interface{}{
+				"usuario":        adm.Permisos.Usuario,
+				"horario":        adm.Permisos.Horario,
+				"actividad":      adm.Permisos.Actividad,
+				"emprendimiento": adm.Permisos.Emprendimiento,
+				"intencion":      adm.Permisos.Intencion,
+				"musica":         adm.Permisos.Musica,
+				"ayudemos":       adm.Permisos.Ayudemos,
+				"misa":           adm.Permisos.Misa,
+				"curso":          adm.Permisos.Curso}).Error
+		}
+		if err != nil {
+			_ = c.Error(err)
+			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
+			return
+		}
 
 		tx.Commit()
 		utils.CrearRespuesta(nil, "Administrador actualizado", c, http.StatusOK)
