@@ -132,22 +132,22 @@ func UpdateParroquia(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	err = tx.Model(&models.ModulosParroquia{}).Where("id = ?", id).Updates(map[string]interface{}{
-		"horario":        etp.Modulos.Horario,
-		"actividad":      etp.Modulos.Actividad,
-		"emprendimiento": etp.Modulos.Emprendimiento,
-		"intencion":      etp.Modulos.Intencion,
-		"musica":         etp.Modulos.Musica,
-		"ayudemos":       etp.Modulos.Ayudemos,
-		"misa":           etp.Modulos.Misa,
-		"curso":          etp.Modulos.Curso,
-	}).Error
-	if err != nil {
-		_ = c.Error(err)
-		tx.Rollback()
-		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
-		return
-	}
+	// err = tx.Model(&models.ModulosParroquia{}).Where("id = ?", id).Updates(map[string]interface{}{
+	// 	"horario":        etp.Modulos.Horario,
+	// 	"actividad":      etp.Modulos.Actividad,
+	// 	"emprendimiento": etp.Modulos.Emprendimiento,
+	// 	"intencion":      etp.Modulos.Intencion,
+	// 	"musica":         etp.Modulos.Musica,
+	// 	"ayudemos":       etp.Modulos.Ayudemos,
+	// 	"misa":           etp.Modulos.Misa,
+	// 	"curso":          etp.Modulos.Curso,
+	// }).Error
+	// if err != nil {
+	// 	_ = c.Error(err)
+	// 	tx.Rollback()
+	// 	utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
+	// 	return
+	// }
 
 	if etp.Imagen != "" {
 		idUrb := fmt.Sprintf("%d", etp.ID)
