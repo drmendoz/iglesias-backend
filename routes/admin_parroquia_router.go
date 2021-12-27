@@ -28,4 +28,5 @@ func administradorParroquiaRouter(r *gin.RouterGroup) {
 	horarioRoutes(admin)
 	musicaRoutes(admin)
 	matrimonioRoutes(admin)
+	galeriaRoutes(admin)
 }
