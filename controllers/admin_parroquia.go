@@ -19,7 +19,7 @@ import (
 func GetAdministradoresParroquia(c *gin.Context) {
 	administradores := []*models.AdminParroquia{}
 	idParroquia := c.GetInt("id_parroquia")
-	err := models.Db.Where(&models.AdminParroquia{ParroquiaID: uint(idParroquia)}).Omit("usuario.Contrasena").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
+	err := models.Db.Where(&models.AdminParroquia{ParroquiaID: uint(idParroquia)}).Omit("usuario.Contrasena").Joins("Parroquia").Joins("Usuario").Order("Usuario.Apellido ASC").Preload("Permisos").Find(&administradores).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener administadores"), nil, c, http.StatusInternalServerError)
@@ -128,7 +128,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 
 	if adm.Usuario == nil || errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {
 		tx := models.Db.Begin()
-		err = tx.Omit("Usuario").Updates(adm).Error
+		err = tx.Omit("Usuario, Parroquia").Updates(adm).Error
 		if err != nil {
 			tx.Rollback()
 			_ = c.Error(err)
@@ -136,7 +136,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 			return
 		}
 		if adm.Usuario != nil {
-			err = tx.Omit("imagen", "contrasena").Where("id = ?", adm.UsuarioID).Updates(adm.Usuario).Error
+			err = tx.Omit("imagen", "contrasena, Parroquia").Where("id = ?", adm.UsuarioID).Updates(adm.Usuario).Error
 			if err != nil {
 				tx.Rollback()
 				_ = c.Error(err)
@@ -160,6 +160,32 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 					return
 				}
 			}
+		}
+		err = tx.Model(&models.AdminParroquia{}).Where("id = ?", ui).Updates(map[string]interface{}{
+			"es_master": adm.EsMaster,
+		}).Error
+		if err != nil {
+			_ = c.Error(err)
+			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
+			return
+		}
+		permisos := &models.AdminParroquiaPermiso{}
+		if adm.Permisos != *permisos {
+			err = tx.Model(&models.AdminMasterPermiso{}).Where("admin_parroquia_id = ?", ui).Updates(map[string]interface{}{
+				"usuario":        adm.Permisos.Usuario,
+				"horario":        adm.Permisos.Horario,
+				"actividad":      adm.Permisos.Actividad,
+				"emprendimiento": adm.Permisos.Emprendimiento,
+				"intencion":      adm.Permisos.Intencion,
+				"musica":         adm.Permisos.Musica,
+				"ayudemos":       adm.Permisos.Ayudemos,
+				"misa":           adm.Permisos.Misa,
+				"curso":          adm.Permisos.Curso}).Error
+		}
+		if err != nil {
+			_ = c.Error(err)
+			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
+			return
 		}
 
 		tx.Commit()

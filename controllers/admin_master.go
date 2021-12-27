@@ -168,6 +168,29 @@ func UpdateAdministrador(c *gin.Context) {
 		if adm.Usuario.Imagen == "" {
 			adm.Usuario.Imagen = utils.DefaultUser
 		}
+		err = tx.Model(&models.AdminMaster{}).Where("id = ?", ui).Updates(map[string]interface{}{
+			"es_master": adm.EsMaster,
+		}).Error
+		if err != nil {
+			_ = c.Error(err)
+			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
+			return
+		}
+		// permisos := &models.AdminMasterPermiso{}
+		// if adm.Permisos != *permisos {
+		// 	err = tx.Model(&models.AdminMasterPermiso{}).Where("admin_master_id = ?", ui).Updates(map[string]interface{}{
+		// 		"iglesia":       adm.Permisos.Iglesia,
+		// 		"parroquia":     adm.Permisos.Parroquia,
+		// 		"administrador": adm.Permisos.Administrador,
+		// 		"modulo":        adm.Permisos.Modulo,
+		// 		"recuadacion":   adm.Permisos.Recuadacion,
+		// 		"usuario":       adm.Permisos.Usuario}).Error
+		// }
+		// if err != nil {
+		// 	_ = c.Error(err)
+		// 	utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
+		// 	return
+		// }
 		tx.Commit()
 		utils.CrearRespuesta(nil, adm, c, http.StatusOK)
 		return

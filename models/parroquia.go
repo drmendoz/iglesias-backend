@@ -22,8 +22,10 @@ type Parroquia struct {
 	BotonPagoCurso          bool              `json:"boton_pago_curso"`
 	BotonPagoEmprendimiento bool              `json:"boton_pago_emprendimiento"`
 	BotonPagoMatrimonio     bool              `json:"boton_pago_matrimonio"`
+	BotonPagoActividad      bool              `json:"boton_pago_actividad"`
+	BotonPagoMusica         bool              `json:"boton_pago_musica"`
 	CostoEmprendimiento     float64           `json:"costo_emprendimiento"`
-	IglesiaID               uint              `json:"id_iglesia"`
+	IglesiaID               *uint             `json:"id_iglesia"`
 	Iglesia                 *Iglesia          `json:"iglesia"`
 	Modulos                 *ModulosParroquia `json:"modulos"`
 }
