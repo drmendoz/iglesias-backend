@@ -14,7 +14,7 @@ type ModulosParroquia struct {
 	Ayudemos       bool       `json:"ayudemos" gorm:"default:false"`
 	Misa           bool       `json:"misa" gorm:"default:false"`
 	Curso          bool       `json:"curso" gorm:"default:false"`
-}
+} // Agregar matrimonio, publicacion y galería
 
 func (ModulosParroquia) TableName() string {
 	return "modulos_parroquia"
