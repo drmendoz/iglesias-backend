@@ -56,7 +56,8 @@ func migrarTablas() {
 		&AdminMasterPermiso{}, &AdminParroquiaPermiso{}, &ModulosParroquia{}, &CategoriaMarket{},
 		&Emprendimiento{}, &EmprendimientoImagen{}, &CategoriaDonacion{}, &Donacion{}, &Aportacion{},
 		&Transaccion{}, &FielTarjeta{}, &ModulosParroquia{}, &Padre{}, &Misa{}, &Intencion{}, &Curso{}, &Inscrito{},
-		&Actividad{}, &Horario{}, &HorarioEntrada{}, &Musica{}, &Matrimonio{}, &MatrimonioImagen{}, &Galeria{})
+		&Actividad{}, &Horario{}, &HorarioEntrada{}, &Musica{}, &Matrimonio{}, &MatrimonioImagen{}, &Galeria{},
+		&HistoriaFiel{}, &LecturaHistoria{})
 	if err != nil {
 		utils.Log.Fatal("Error al migrar modelos", err)
 	}

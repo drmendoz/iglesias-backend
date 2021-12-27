@@ -101,6 +101,7 @@ func DeleteCurso(c *gin.Context) {
 
 func InscribirCurso(c *gin.Context) {
 	idFiel := c.GetInt("id_fiel")
+	idParroquia := c.GetInt("id_parroquia")
 	id := c.Param("id")
 	idCurso, err := strconv.Atoi(id)
 	if err != nil {
@@ -176,7 +177,7 @@ func InscribirCurso(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	inscrito.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID}
+	inscrito.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, ParroquiaID: uint(idParroquia)}
 	err = tx.Create(inscrito).Error
 	if err != nil {
 		tx.Rollback()

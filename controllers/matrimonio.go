@@ -102,7 +102,7 @@ func CreateMatrimonio(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	mat.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID}
+	mat.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, ParroquiaID: idParroquia}
 	err = tx.Create(mat).Error
 	if err != nil {
 		tx.Rollback()

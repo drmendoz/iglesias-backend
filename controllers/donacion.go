@@ -166,6 +166,7 @@ func DeleteDonacion(c *gin.Context) {
 
 func AportarDonacion(c *gin.Context) {
 	idFiel := c.GetInt("id_fiel")
+	idParroquia := c.GetInt("id_parroquia")
 	id := c.Param("id")
 	idDon, err := strconv.Atoi(id)
 	if err != nil {
@@ -195,6 +196,14 @@ func AportarDonacion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
+	donacion := &models.Donacion{}
+	err = tx.First(donacion, idDon).Error
+	if err != nil {
+		tx.Rollback()
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
+		return
+	}
 	tarjeta := &models.FielTarjeta{}
 	err = tx.Where("token_tarjeta = ?", aportacion.TokenTarjeta).First(tarjeta).Error
 	if err != nil {
@@ -217,7 +226,7 @@ func AportarDonacion(c *gin.Context) {
 
 		}
 	}
-	aportacion.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID}
+	aportacion.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, CategoriaID: donacion.CategoriaDonacionID, ParroquiaID: uint(idParroquia)}
 	err = tx.Create(aportacion).Error
 	if err != nil {
 		tx.Rollback()

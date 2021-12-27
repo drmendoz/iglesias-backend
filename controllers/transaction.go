@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
@@ -10,6 +11,28 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+func GetTransaccions(c *gin.Context) {
+	modulo := c.Query("modulo")
+	idCategoria := c.Query("id_categoria")
+	idParroquia := c.Query("id_parroquia")
+	idCat, err := strconv.Atoi(idCategoria)
+	if err != nil {
+		idCat = 0
+	}
+	idPar, err := strconv.Atoi(idParroquia)
+	if err != nil {
+		idPar = 0
+	}
+	transaccions := []*models.Transaccion{}
+	err = models.Db.Where(&models.Transaccion{TipoPagoType: modulo, ParroquiaID: uint(idPar), CategoriaID: uint(idCat)}).Find(&transaccions).Error
+	if err != nil {
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+		return
+	}
+	utils.CrearRespuesta(nil, transaccions, c, http.StatusOK)
+}
 
 func GetTransaccion(c *gin.Context) {
 	transaccions := []*models.Transaccion{}
@@ -56,23 +79,6 @@ func DevolverTransaccion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al devolver transaccion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	// if transaccion.Tipo == "ALI" {
-	// 	err = tx.Where("transaccion_id = ?", transaccion.ID).Updates(&models.Alicuota{Estado: "PENDIENTE"}).Error
-	// 	if err != nil {
-	// 		tx.Rollback()
-	// 		_ = c.Error(err)
-	// 		utils.CrearRespuesta(errors.New("Error al devolver transaccion"), nil, c, http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// } else if transaccion.Tipo == "RES" {
-	// 	err = tx.Where("transaccion_id = ?", transaccion.ID).Delete(&models.ReservacionAreaSocial{}).Error
-	// 	if err != nil {
-	// 		tx.Rollback()
-	// 		_ = c.Error(err)
-	// 		utils.CrearRespuesta(errors.New("Error al devolver transaccion"), nil, c, http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// }
 	respuesta, err := paymentez.DevolverPago(transaccion.ID)
 	if err != nil {
 		tx.Rollback()

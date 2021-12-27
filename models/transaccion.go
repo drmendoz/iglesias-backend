@@ -17,4 +17,6 @@ type Transaccion struct {
 	DetalleDevolucion  string       `json:"detalle_devolucion"`
 	FielTarjetaID      uint         `json:"tarjeta_id"`
 	FielTarjeta        *FielTarjeta `json:"tarjeta,omitempty"`
+	ParroquiaID        uint         `json:"id_parroquia"`
+	Parroquia          *Parroquia   `json:"parroquia"`
 }

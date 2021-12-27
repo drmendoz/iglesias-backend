@@ -9,7 +9,7 @@ func transaccionRoutes(r *gin.RouterGroup) {
 	admin := r.Group("transacciones")
 	//admin.Use(middlewares.RolMasterMiddleware())
 	//admin.Use(middlewares.AuthMiddleWare())
-	admin.GET("", controllers.GetTransaccion)
+	admin.GET("", controllers.GetTransaccions)
 	admin.GET(":id", controllers.GetTransaccionPorId)
 	admin.POST(":id/devolver", controllers.DevolverTransaccion)
 }
