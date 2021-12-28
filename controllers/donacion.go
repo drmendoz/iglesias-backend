@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
@@ -96,7 +97,12 @@ func UpdateDonacion(c *gin.Context) {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-
+	if strings.HasPrefix(etp.Imagen, "https://") {
+		etp.Imagen = ""
+	}
+	if strings.HasPrefix(etp.ImagenReserva, "https://") {
+		etp.ImagenReserva = ""
+	}
 	tx := models.Db.Begin()
 	id := c.Param("id")
 	err = tx.Where("id = ?", id).Updates(etp).Error
