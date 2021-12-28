@@ -8,6 +8,7 @@ import (
 func donacionRoutes(r *gin.RouterGroup) {
 	admin := r.Group("causas-beneficas")
 	admin.GET("", controllers.GetDonacions)
+	admin.GET("/:id/aportaciones", controllers.GetAportacionesDeDonacion)
 	admin.POST("", controllers.CreateDonacion)
 	admin.PUT("/:id", controllers.UpdateDonacion)
 	admin.GET("/:id", controllers.GetDonacionPorID)

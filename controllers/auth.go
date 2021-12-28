@@ -53,7 +53,7 @@ func LoginAdminParroquia(c *gin.Context) {
 	}
 	adm := &models.AdminParroquia{}
 	creds.Contrasena = auth.HashPassword(creds.Contrasena)
-	res := models.Db.Where("Usuario.correo = ? ", creds.Correo).Joins("Usuario").Preload("Parroquia").Preload("Permisos").First(adm)
+	res := models.Db.Where("Usuario.correo = ? ", creds.Correo).Joins("Usuario").Preload("Parroquia").Preload("Parroquia.Modulos").Preload("Permisos").First(adm)
 	if res.Error != nil || creds.Contrasena != adm.Usuario.Contrasena {
 		utils.CrearRespuesta(errors.New("Usuario y/o contrasena incorrecta"), nil, c, http.StatusUnauthorized)
 		return

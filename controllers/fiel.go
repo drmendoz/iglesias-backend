@@ -154,7 +154,8 @@ func UpdateFiel(c *gin.Context) {
 			}
 			res.Usuario.Imagen = utils.SERVIMG + res.Usuario.Imagen
 		}
-		err = tx.Where("id = ?", adComp.Usuario.ID).Omit("contrasena").Updates(res.Usuario).Error
+		_ = tx.Where("id = ?", adComp.Usuario.ID).Omit("contrasena").Updates(res.Usuario).Error
+
 	}
 
 	err = tx.Omit("Usuario").Updates(res).Error

@@ -12,6 +12,7 @@ type AdminMasterPermiso struct {
 	Modulo        bool         `json:"modulo" gorm:"default:false"`
 	Recuadacion   bool         `json:"recaudacion" gorm:"default:false"`
 	Usuario       bool         `json:"usuario" gorm:"default:false"`
+	Categoria     bool         `json:"categoria"`
 }
 
 func (AdminMasterPermiso) TableName() string {

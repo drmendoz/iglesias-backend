@@ -88,7 +88,7 @@ func CreateAdministradorParroquia(c *gin.Context) {
 			}
 			adm.Usuario.Imagen = utils.SERVIMG + adm.Usuario.Imagen
 		}
-		err = mail.EnviarCambioContrasenaParroquia(*adm)
+		_ = mail.EnviarCambioContrasenaParroquia(*adm)
 		tx.Commit()
 		utils.CrearRespuesta(nil, adm, c, http.StatusCreated)
 

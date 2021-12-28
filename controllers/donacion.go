@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
+	"strings"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
-	"github.com/drmendoz/iglesias-backend/utils/img"
 	"github.com/drmendoz/iglesias-backend/utils/paymentez"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -76,27 +75,6 @@ func CreateDonacion(c *gin.Context) {
 	}
 	etp.ParroquiaID = idParroquia
 
-	if etp.Imagen != "" {
-		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "donacion/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al crear area "), nil, c, http.StatusInternalServerError)
-
-			return
-		}
-	}
-	if etp.ImagenReserva != "" {
-		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.ImagenReserva, err = img.FromBase64ToImage(etp.ImagenReserva, "donacion/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al crear donacion"), nil, c, http.StatusInternalServerError)
-
-			return
-		}
-	}
-
 	tx := models.Db.Begin()
 	err = tx.Create(etp).Error
 	if err != nil {
@@ -119,27 +97,12 @@ func UpdateDonacion(c *gin.Context) {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
-	if etp.Imagen != "" {
-		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "donacion/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al decodificar imagen"), nil, c, http.StatusInternalServerError)
-
-			return
-		}
+	if strings.HasPrefix(etp.Imagen, "https://") {
+		etp.Imagen = ""
 	}
-	if etp.ImagenReserva != "" {
-		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.ImagenReserva, err = img.FromBase64ToImage(etp.ImagenReserva, "donacion/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al decodificar imagen "), nil, c, http.StatusInternalServerError)
-
-			return
-		}
+	if strings.HasPrefix(etp.ImagenReserva, "https://") {
+		etp.ImagenReserva = ""
 	}
-
 	tx := models.Db.Begin()
 	id := c.Param("id")
 	err = tx.Where("id = ?", id).Updates(etp).Error
@@ -255,4 +218,21 @@ func AportarDonacion(c *gin.Context) {
 	}
 	_ = tx.Commit()
 	utils.CrearRespuesta(nil, "Aportacion creada exitosamente", c, http.StatusOK)
+}
+
+func GetAportacionesDeDonacion(c *gin.Context) {
+	idDonacion := c.Param("id")
+	idD, err := strconv.Atoi(idDonacion)
+	if err != nil {
+		utils.CrearRespuesta(errors.New("Id incorrecto"), nil, c, http.StatusBadRequest)
+		return
+	}
+	aportaciones := []*models.Aportacion{}
+	err = models.Db.Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Find(&aportaciones).Error
+	if err != nil {
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
+		return
+	}
+	utils.CrearRespuesta(nil, aportaciones, c, http.StatusOK)
 }
