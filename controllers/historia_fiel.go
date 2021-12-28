@@ -34,24 +34,9 @@ func SubirHistoria(c *gin.Context) {
 	nombreFinal := ""
 	if isVideo == "true" {
 		isVid = true
-		// 	video, err := cinema.Load(nombreTmp)
-		// 	if err != nil {
-		// 		_ = c.Error(err)
-		// 		utils.CrearRespuesta(errors.New("Error al subir historia"), nil, c, http.StatusInternalServerError)
-		// 		return
-		// 	}
-		// 	if video.Duration().Seconds() > 15 {
-		// 		video.SetEnd(15 * time.Second)
-		// 	}
-		// 	nombreFinal = "public/historias/" + time.Now().Format(time.RFC3339) + ".mp4"
-		// 	err = video.Render(nombreFinal)
-		// 	if err != nil {
-		// 		_ = c.Error(err)
-		// 		utils.CrearRespuesta(errors.New("Error al subir historia"), nil, c, http.StatusInternalServerError)
-		// 		return
+
 	}
-	// 	_ = os.Remove(nombreTmp)
-	// } else {
+
 	nombreFinal = nombreTmp
 	//}
 	fechaInicio := time.Now().In(tiempo.Local)

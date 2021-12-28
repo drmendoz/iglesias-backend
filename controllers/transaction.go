@@ -4,10 +4,12 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
 	"github.com/drmendoz/iglesias-backend/utils/paymentez"
+	"github.com/drmendoz/iglesias-backend/utils/tiempo"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -16,6 +18,17 @@ func GetTransaccions(c *gin.Context) {
 	modulo := c.Query("modulo")
 	idCategoria := c.Query("id_categoria")
 	idParroquia := c.Query("id_parroquia")
+	fechaInicioQ := c.Query("fecha_inicio")
+	fechaFinQ := c.Query("fecha_fin")
+	fechaInicio, err := time.Parse("2006-01-02", fechaInicioQ)
+	if err != nil {
+		fechaInicio = time.Date(1970, time.December, 28, 23, 59, 0, 0, tiempo.Local)
+	}
+
+	fechaFin, err := time.Parse("2006-01-02", fechaFinQ)
+	if err != nil {
+		fechaFin = time.Date(3000, time.December, 28, 23, 59, 0, 0, tiempo.Local)
+	}
 	idCat, err := strconv.Atoi(idCategoria)
 	if err != nil {
 		idCat = 0
@@ -25,7 +38,7 @@ func GetTransaccions(c *gin.Context) {
 		idPar = 0
 	}
 	transaccions := []*models.Transaccion{}
-	err = models.Db.Where(&models.Transaccion{TipoPagoType: modulo, ParroquiaID: uint(idPar), CategoriaID: uint(idCat)}).Find(&transaccions).Error
+	err = models.Db.Where("created_at between ? and ?", fechaInicio, fechaFin).Where(&models.Transaccion{TipoPagoType: modulo, ParroquiaID: uint(idPar), CategoriaID: uint(idCat)}).Find(&transaccions).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)

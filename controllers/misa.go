@@ -18,6 +18,7 @@ func GetMisas(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener misas"), nil, c, http.StatusInternalServerError)
 		return
 	}
+
 	utils.CrearRespuesta(err, etps, c, http.StatusOK)
 }
 
@@ -50,7 +51,7 @@ func CreateMisa(c *gin.Context) {
 	etp.ParroquiaID = uint(idParroquia)
 
 	tx := models.Db.Begin()
-	err = tx.Omit("imagen").Create(etp).Error
+	err = tx.Create(etp).Error
 	if err != nil {
 		tx.Rollback()
 		_ = c.Error(err)
@@ -73,7 +74,7 @@ func UpdateMisa(c *gin.Context) {
 	}
 	id := c.Param("id")
 	tx := models.Db.Begin()
-	err = tx.Omit("imagen").Where("id = ?", id).Updates(etp).Error
+	err = tx.Where("id = ?", id).Updates(etp).Error
 	if err != nil {
 		_ = c.Error(err)
 		tx.Rollback()
