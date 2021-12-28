@@ -18,6 +18,7 @@ type AdminParroquiaPermiso struct {
 	Matrimonio       bool            `json:"matrimonio" gorm:"default:false"`
 	Publicacion      bool            `json:"publicacion" gorm:"default:false"`
 	Galeria          bool            `json:"galeria" gorm:"default:false"`
+	Recaudacion      bool            `json:"recaudacion" gorm:"default:false"`
 }
 
 func (AdminParroquiaPermiso) TableName() string {
