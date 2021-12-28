@@ -220,6 +220,12 @@ func AportarDonacion(c *gin.Context) {
 	utils.CrearRespuesta(nil, "Aportacion creada exitosamente", c, http.StatusOK)
 }
 
+type DonacionesTotal struct {
+	Donaciones []*models.Aportacion `json:"aportaciones"`
+	Monto      float64              `json:"monto"`
+	Donacion   *models.Donacion     `json:"donacion"`
+}
+
 func GetAportacionesDeDonacion(c *gin.Context) {
 	idDonacion := c.Param("id")
 	idD, err := strconv.Atoi(idDonacion)
@@ -227,12 +233,26 @@ func GetAportacionesDeDonacion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Id incorrecto"), nil, c, http.StatusBadRequest)
 		return
 	}
-	aportaciones := []*models.Aportacion{}
-	err = models.Db.Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Find(&aportaciones).Error
+	donacion := &models.Donacion{}
+	err = models.Db.Preload("CategoriaDonacion").Find(&donacion).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	utils.CrearRespuesta(nil, aportaciones, c, http.StatusOK)
+
+	aportaciones := []*models.Aportacion{}
+	err = models.Db.Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Preload("Fiel.Usuario").Find(&aportaciones).Error
+	if err != nil {
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
+		return
+	}
+	total := &DonacionesTotal{}
+	for _, don := range aportaciones {
+		total.Monto += don.Monto
+	}
+	total.Donaciones = aportaciones
+	total.Donacion = donacion
+	utils.CrearRespuesta(nil, total, c, http.StatusOK)
 }
