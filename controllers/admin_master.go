@@ -130,7 +130,9 @@ func UpdateAdministrador(c *gin.Context) {
 	err = models.Db.Where("Usuario.correo = ?", adm.Usuario.Correo).Joins("Usuario").First(&adComp).Error
 	if errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {
 		adm.Usuario.ID = adComp.UsuarioID
-		adm.Usuario.Contrasena = auth.HashPassword(adm.Usuario.Contrasena)
+		if adm.Usuario.Contrasena != "" {
+			adm.Usuario.Contrasena = auth.HashPassword(adm.Usuario.Contrasena)
+		}
 		tx := models.Db.Begin()
 
 		if err != nil {
