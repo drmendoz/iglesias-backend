@@ -56,21 +56,6 @@ func CreateAdministrador(c *gin.Context) {
 		adm.ContraHash = adm.Usuario.Contrasena
 		adm.Usuario.Contrasena = clave
 		tx := models.Db.Begin()
-		// if isMaster {
-		// 	adm.Permisos = models.AdminMasterPermiso{
-		// 		Autorizado:    true,
-		// 		Urbanizacion:  true,
-		// 		Etapa:         true,
-		// 		Administrador: true,
-		// 		Modulo:        true,
-		// 		Categoria:     true,
-		// 		Publicidad:    true,
-		// 		Facturacion:   true,
-		// 		Fiel:          true,
-		// 		Usuario:       true,
-		// 	}
-		// }
-
 		err = tx.Create(adm).Error
 		if err != nil {
 			tx.Rollback()
@@ -127,37 +112,32 @@ func UpdateAdministrador(c *gin.Context) {
 	ui, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	adm.ID = uint(ui)
 	adComp := &models.AdminMaster{}
-	err = models.Db.Where("Usuario.correo = ?", adm.Usuario.Correo).Joins("Usuario").First(&adComp).Error
-	if errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {
-		adm.Usuario.ID = adComp.UsuarioID
-		if adm.Usuario.Contrasena != "" {
-			adm.Usuario.Contrasena = auth.HashPassword(adm.Usuario.Contrasena)
-		}
-		tx := models.Db.Begin()
+	if adm.Usuario != nil {
 
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
-			return
-		}
-		if img.IsBase64(adm.Usuario.Imagen) {
-			adm.Usuario, err = UploadImagePerfil(adm.Usuario, tx)
-			if err != nil {
-				_ = c.Error(err)
-				tx.Rollback()
-				utils.CrearRespuesta(errors.New("Error al decodificar imagen"), nil, c, http.StatusInternalServerError)
-				return
-			}
-			adm.Usuario.Imagen = utils.SERVIMG + adm.Usuario.Imagen
-		}
+		err = models.Db.Where("Usuario.correo = ?", adm.Usuario.Correo).Joins("Usuario").First(&adComp).Error
+	} else {
+		adComp.ID = adm.ID
+	}
+	if errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {
+		tx := models.Db.Begin()
 		err = tx.Omit("Usuario").Updates(adm).Error
 		if err != nil {
 			tx.Rollback()
 			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al actualizar administrador"), nil, c, http.StatusInternalServerError)
+			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
 			return
 		}
 		if adm.Usuario != nil {
+			if img.IsBase64(adm.Usuario.Imagen) {
+				adm.Usuario, err = UploadImagePerfil(adm.Usuario, tx)
+				if err != nil {
+					_ = c.Error(err)
+					tx.Rollback()
+					utils.CrearRespuesta(errors.New("Error al decodificar imagen"), nil, c, http.StatusInternalServerError)
+					return
+				}
+				adm.Usuario.Imagen = utils.SERVIMG + adm.Usuario.Imagen
+			}
 			err = tx.Where("id = ?", adm.UsuarioID).Omit("contrasena").Updates(adm.Usuario).Error
 			if err != nil {
 				tx.Rollback()
@@ -165,11 +145,15 @@ func UpdateAdministrador(c *gin.Context) {
 				utils.CrearRespuesta(errors.New("Error al actualizar administrador"), nil, c, http.StatusInternalServerError)
 				return
 			}
+		}
 
+		if err != nil {
+			tx.Rollback()
+			_ = c.Error(err)
+			utils.CrearRespuesta(errors.New("Error al actualizar administrador"), nil, c, http.StatusInternalServerError)
+			return
 		}
-		if adm.Usuario.Imagen == "" {
-			adm.Usuario.Imagen = utils.DefaultUser
-		}
+
 		err = tx.Model(&models.AdminMaster{}).Where("id = ?", ui).Updates(map[string]interface{}{
 			"es_master": adm.EsMaster,
 		}).Error
@@ -178,35 +162,13 @@ func UpdateAdministrador(c *gin.Context) {
 			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
 			return
 		}
-		// permisos := &models.AdminMasterPermiso{}
-		// if adm.Permisos != *permisos {
-		// 	err = tx.Model(&models.AdminMasterPermiso{}).Where("admin_master_id = ?", ui).Updates(map[string]interface{}{
-		// 		"iglesia":       adm.Permisos.Iglesia,
-		// 		"parroquia":     adm.Permisos.Parroquia,
-		// 		"administrador": adm.Permisos.Administrador,
-		// 		"modulo":        adm.Permisos.Modulo,
-		// 		"recuadacion":   adm.Permisos.Recuadacion,
-		// 		"usuario":       adm.Permisos.Usuario}).Error
-		// }
-		// if err != nil {
-		// 	_ = c.Error(err)
-		// 	utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
-		// 	return
-		// }
-		tx.Commit()
-		utils.CrearRespuesta(nil, adm, c, http.StatusOK)
-		return
-	}
-	if adComp.ID != 0 {
-		utils.CrearRespuesta(errors.New("Ya existe un administrador con ese correo"), nil, c, http.StatusNotAcceptable)
-		return
-	}
 
-	if err != nil {
-		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
+		tx.Commit()
+		utils.CrearRespuesta(nil, "Administrador actualizado correctamente", c, http.StatusOK)
 		return
 	}
+	utils.CrearRespuesta(errors.New("Ya existe un administrador con ese correo"), nil, c, http.StatusNotAcceptable)
+
 }
 
 func GetAdministradorPorId(c *gin.Context) {
