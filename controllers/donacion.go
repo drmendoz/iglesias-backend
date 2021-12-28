@@ -220,6 +220,11 @@ func AportarDonacion(c *gin.Context) {
 	utils.CrearRespuesta(nil, "Aportacion creada exitosamente", c, http.StatusOK)
 }
 
+type DonacionesTotal struct {
+	Donaciones []*models.Aportacion `json:"aportaciones"`
+	Monto      float64              `json:"monto"`
+}
+
 func GetAportacionesDeDonacion(c *gin.Context) {
 	idDonacion := c.Param("id")
 	idD, err := strconv.Atoi(idDonacion)
@@ -234,5 +239,10 @@ func GetAportacionesDeDonacion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	utils.CrearRespuesta(nil, aportaciones, c, http.StatusOK)
+	total := &DonacionesTotal{}
+	for _, don := range aportaciones {
+		total.Monto += don.Monto
+	}
+	total.Donaciones = aportaciones
+	utils.CrearRespuesta(nil, total, c, http.StatusOK)
 }
