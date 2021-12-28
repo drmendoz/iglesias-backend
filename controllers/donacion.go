@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
-	"github.com/drmendoz/iglesias-backend/utils/img"
 	"github.com/drmendoz/iglesias-backend/utils/paymentez"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -76,27 +74,6 @@ func CreateDonacion(c *gin.Context) {
 	}
 	etp.ParroquiaID = idParroquia
 
-	if etp.Imagen != "" {
-		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "donacion/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al crear area "), nil, c, http.StatusInternalServerError)
-
-			return
-		}
-	}
-	if etp.ImagenReserva != "" {
-		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.ImagenReserva, err = img.FromBase64ToImage(etp.ImagenReserva, "donacion/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al crear donacion"), nil, c, http.StatusInternalServerError)
-
-			return
-		}
-	}
-
 	tx := models.Db.Begin()
 	err = tx.Create(etp).Error
 	if err != nil {
@@ -118,26 +95,6 @@ func UpdateDonacion(c *gin.Context) {
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
-	}
-	if etp.Imagen != "" {
-		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.Imagen, err = img.FromBase64ToImage(etp.Imagen, "donacion/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al decodificar imagen"), nil, c, http.StatusInternalServerError)
-
-			return
-		}
-	}
-	if etp.ImagenReserva != "" {
-		idUrb := fmt.Sprintf("%d", etp.ID)
-		etp.ImagenReserva, err = img.FromBase64ToImage(etp.ImagenReserva, "donacion/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al decodificar imagen "), nil, c, http.StatusInternalServerError)
-
-			return
-		}
 	}
 
 	tx := models.Db.Begin()
