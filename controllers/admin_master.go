@@ -120,7 +120,7 @@ func UpdateAdministrador(c *gin.Context) {
 	}
 	if errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {
 		tx := models.Db.Begin()
-		err = tx.Omit("Usuario").Updates(adm).Error
+		err = tx.Omit("Usuario, Permisos").Updates(adm).Error
 		if err != nil {
 			tx.Rollback()
 			_ = c.Error(err)
@@ -162,6 +162,20 @@ func UpdateAdministrador(c *gin.Context) {
 			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
 			return
 		}
+		err = tx.Model(&models.AdminMasterPermiso{}).Where("admin_master_id = ?", ui).Updates(map[string]interface{}{
+			"iglesia":       adm.Permisos.Iglesia,
+			"parroquia":     adm.Permisos.Parroquia,
+			"administrador": adm.Permisos.Administrador,
+			"modulo":        adm.Permisos.Modulo,
+			"recuadacion":   adm.Permisos.Recuadacion,
+			"usuario":       adm.Permisos.Usuario,
+			"categoria":     adm.Permisos.Categoria,
+		}).Error
+		if err != nil {
+			_ = c.Error(err)
+			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
+			return
+		}
 
 		tx.Commit()
 		utils.CrearRespuesta(nil, "Administrador actualizado correctamente", c, http.StatusOK)
@@ -174,7 +188,7 @@ func UpdateAdministrador(c *gin.Context) {
 func GetAdministradorPorId(c *gin.Context) {
 	adm := &models.AdminMaster{}
 	id := c.Param("id")
-	err := models.Db.Where("admin_master.id = ?", id).Omit("usuarios.contrasena").Joins("Usuario").First(adm).Error
+	err := models.Db.Where("admin_master.id = ?", id).Omit("usuarios.contrasena").Joins("Permisos").Joins("Usuario").First(adm).Error
 	if adm.Usuario.Imagen == "" {
 		adm.Usuario.Imagen = utils.DefaultUser
 	} else {

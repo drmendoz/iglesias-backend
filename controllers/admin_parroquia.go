@@ -124,7 +124,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 
 	if adm.Usuario == nil || errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {
 		tx := models.Db.Begin()
-		err = tx.Omit("Usuario, Parroquia").Updates(adm).Error
+		err = tx.Omit("Usuario, Parroquia, Permisos").Updates(adm).Error
 		if err != nil {
 			tx.Rollback()
 			_ = c.Error(err)
@@ -132,7 +132,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 			return
 		}
 		if adm.Usuario != nil {
-			err = tx.Omit("imagen", "contrasena, Parroquia").Where("id = ?", adm.UsuarioID).Updates(adm.Usuario).Error
+			err = tx.Omit("imagen, contrasena, Parroquia, Permisos").Where("id = ?", adm.UsuarioID).Updates(adm.Usuario).Error
 			if err != nil {
 				tx.Rollback()
 				_ = c.Error(err)
@@ -165,7 +165,17 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
 			return
 		}
-
+		err = tx.Model(&models.AdminMasterPermiso{}).Where("admin_parroquia_id = ?", ui).Updates(map[string]interface{}{
+			"usuario":        adm.Permisos.Usuario,
+			"horario":        adm.Permisos.Horario,
+			"actividad":      adm.Permisos.Actividad,
+			"emprendimiento": adm.Permisos.Emprendimiento,
+			"intencion":      adm.Permisos.Intencion,
+			"musica":         adm.Permisos.Musica,
+			"ayudemos":       adm.Permisos.Ayudemos,
+			"misa":           adm.Permisos.Misa,
+			"curso":          adm.Permisos.Curso,
+		}).Error
 		if err != nil {
 			_ = c.Error(err)
 			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
