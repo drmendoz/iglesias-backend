@@ -223,6 +223,7 @@ func AportarDonacion(c *gin.Context) {
 type DonacionesTotal struct {
 	Donaciones []*models.Aportacion `json:"aportaciones"`
 	Monto      float64              `json:"monto"`
+	Donacion   *models.Donacion     `json:"donacion"`
 }
 
 func GetAportacionesDeDonacion(c *gin.Context) {
@@ -232,6 +233,14 @@ func GetAportacionesDeDonacion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Id incorrecto"), nil, c, http.StatusBadRequest)
 		return
 	}
+	donacion := &models.Donacion{}
+	err = models.Db.Preload("CategoriaDonacion").Find(&donacion).Error
+	if err != nil {
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
+		return
+	}
+
 	aportaciones := []*models.Aportacion{}
 	err = models.Db.Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Preload("Fiel.Usuario").Find(&aportaciones).Error
 	if err != nil {
@@ -244,5 +253,6 @@ func GetAportacionesDeDonacion(c *gin.Context) {
 		total.Monto += don.Monto
 	}
 	total.Donaciones = aportaciones
+	total.Donacion = donacion
 	utils.CrearRespuesta(nil, total, c, http.StatusOK)
 }
