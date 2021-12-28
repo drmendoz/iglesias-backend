@@ -139,24 +139,6 @@ func UpdateParroquia(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	err = tx.Model(&models.ModulosParroquia{}).Where("id = ?", id).Updates(map[string]interface{}{
-		"horario":        etp.Modulos.Horario,
-		"actividad":      etp.Modulos.Actividad,
-		"emprendimiento": etp.Modulos.Emprendimiento,
-		"intencion":      etp.Modulos.Intencion,
-		"musica":         etp.Modulos.Musica,
-		"ayudemos":       etp.Modulos.Ayudemos,
-		"galeria":        etp.Modulos.Galeria,
-		"matrimonio":     etp.Modulos.Matrimonio,
-		"publicacion":    etp.Modulos.Publicacion,
-		"curso":          etp.Modulos.Curso,
-	}).Error
-	if err != nil {
-		_ = c.Error(err)
-		tx.Rollback()
-		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
-		return
-	}
 
 	if etp.Imagen != "" {
 		idUrb := fmt.Sprintf("%d", etp.ID)
@@ -181,6 +163,39 @@ func UpdateParroquia(c *gin.Context) {
 		etp.Imagen = utils.DefaultParroquia
 	}
 
+	tx.Commit()
+	utils.CrearRespuesta(err, "Parroquia actualizada correctamente", c, http.StatusOK)
+}
+
+func UpdateModulosParroquia(c *gin.Context) {
+	etp := &models.ModulosParroquia{}
+	err := c.ShouldBindJSON(etp)
+	if err != nil {
+		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
+		return
+	}
+	id := c.Param("id")
+
+	tx := models.Db.Begin()
+
+	err = tx.Model(&models.ModulosParroquia{}).Where("parroquia_id = ?", id).Updates(map[string]interface{}{
+		"horario":        etp.Horario,
+		"actividad":      etp.Actividad,
+		"emprendimiento": etp.Emprendimiento,
+		"intencion":      etp.Intencion,
+		"musica":         etp.Musica,
+		"ayudemos":       etp.Ayudemos,
+		"galeria":        etp.Galeria,
+		"matrimonio":     etp.Matrimonio,
+		"publicacion":    etp.Publicacion,
+		"curso":          etp.Curso,
+	}).Error
+	if err != nil {
+		_ = c.Error(err)
+		tx.Rollback()
+		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
+		return
+	}
 	tx.Commit()
 	utils.CrearRespuesta(err, "Parroquia actualizada correctamente", c, http.StatusOK)
 }

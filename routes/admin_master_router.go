@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/drmendoz/iglesias-backend/controllers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,4 +19,5 @@ func administradorMasterRouter(r *gin.RouterGroup) {
 	transaccionRoutes(admin)
 	permisoRoutes(admin)
 	iglesiaRoutes(admin)
+	admin.PUT("/parroquia/modulos/:id", controllers.UpdateModulosParroquia)
 }
