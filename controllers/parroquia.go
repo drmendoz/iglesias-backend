@@ -84,7 +84,7 @@ func CreateParroquia(c *gin.Context) {
 
 			return
 		}
-		err = tx.Model(&models.ModulosParroquia{}).Create(&models.ModulosParroquia{ParroquiaID: etp.ID, Horario: true, Actividad: true, Emprendimiento: true, Intencion: true, Musica: true, Ayudemos: true, Misa: true, Curso: true}).Error
+		err = tx.Model(&models.ModulosParroquia{}).Create(&models.ModulosParroquia{ParroquiaID: etp.ID, Horario: true, Actividad: true, Emprendimiento: true, Intencion: true, Musica: true, Ayudemos: true, Curso: true, Matrimonio: true, Galeria: true, Publicacion: true}).Error
 		if err != nil {
 			_ = c.Error(err)
 			tx.Rollback()
@@ -146,7 +146,9 @@ func UpdateParroquia(c *gin.Context) {
 		"intencion":      etp.Modulos.Intencion,
 		"musica":         etp.Modulos.Musica,
 		"ayudemos":       etp.Modulos.Ayudemos,
-		"misa":           etp.Modulos.Misa,
+		"galeria":        etp.Modulos.Galeria,
+		"matrimonio":     etp.Modulos.Matrimonio,
+		"publicacion":    etp.Modulos.Publicacion,
 		"curso":          etp.Modulos.Curso,
 	}).Error
 	if err != nil {
