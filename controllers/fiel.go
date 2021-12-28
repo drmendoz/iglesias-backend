@@ -84,13 +84,16 @@ func CreateFiel(c *gin.Context) {
 }
 
 func GetFieles(c *gin.Context) {
+	idParroquia_ := c.Query("id_parroquia")
 	idParroquia := c.GetInt("id_parroquia")
 	fieles := []*models.Fiel{}
+	if idParroquia_ != "" {
+		idParroquia, _ = strconv.Atoi(idParroquia_)
+	}
 	var err error
 	if idParroquia != 0 {
 		err = models.Db.Where("parroquia_id = ?", idParroquia).Omit("Usuario.Contrasena").Joins("Usuario").Joins("Parroquia").Find(&fieles).Error
 	} else {
-
 		err = models.Db.Omit("Usuario.Contrasena").Joins("Usuario").Joins("Parroquia").Find(&fieles).Error
 	}
 	if err != nil {
