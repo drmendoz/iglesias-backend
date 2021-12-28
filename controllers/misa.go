@@ -12,7 +12,7 @@ import (
 
 func GetMisas(c *gin.Context) {
 	etps := []*models.Misa{}
-	err := models.Db.Order("created_at ASC").Find(&etps).Error
+	err := models.Db.Order("created_at ASC").Preload("Padre").Find(&etps).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener misas"), nil, c, http.StatusInternalServerError)
