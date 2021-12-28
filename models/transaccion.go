@@ -19,4 +19,7 @@ type Transaccion struct {
 	FielTarjeta        *FielTarjeta `json:"tarjeta,omitempty"`
 	ParroquiaID        uint         `json:"id_parroquia"`
 	Parroquia          *Parroquia   `json:"parroquia"`
+	Nombre             string       `json:"nombre" gorm:"-"`
+	Apellido           string       `json:"apellido" gorm:"-"`
+	Correo             string       `json:"correo" gorm:"-"`
 }

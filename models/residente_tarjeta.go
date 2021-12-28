@@ -5,7 +5,7 @@ import "gorm.io/gorm"
 type FielTarjeta struct {
 	gorm.Model
 	TokenTarjeta  string         `json:"token"`
-	FielID        uint           `json:"id_residente"`
-	Fiel          *Fiel          `json:"residente"`
+	FielID        uint           `json:"id_fiel"`
+	Fiel          *Fiel          `json:"fiel"`
 	Transacciones []*Transaccion `json:"transacciones"`
 }

@@ -38,11 +38,19 @@ func GetTransaccions(c *gin.Context) {
 		idPar = 0
 	}
 	transaccions := []*models.Transaccion{}
-	err = models.Db.Where("created_at between ? and ?", fechaInicio, fechaFin).Where(&models.Transaccion{TipoPagoType: modulo, ParroquiaID: uint(idPar), CategoriaID: uint(idCat)}).Find(&transaccions).Error
+	err = models.Db.Where("created_at between ? and ?", fechaInicio, fechaFin).Where(&models.Transaccion{TipoPagoType: modulo, ParroquiaID: uint(idPar), CategoriaID: uint(idCat)}).Preload("FielTarjeta.Fiel.Usuario").Find(&transaccions).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
 		return
+	}
+	for _, tr := range transaccions {
+		if tr.FielTarjeta.Fiel != nil {
+			tr.Nombre = tr.FielTarjeta.Fiel.Usuario.Nombre
+			tr.Apellido = tr.FielTarjeta.Fiel.Usuario.Apellido
+			tr.Correo = tr.FielTarjeta.Fiel.Usuario.Correo
+		}
+		tr.FielTarjeta = nil
 	}
 	utils.CrearRespuesta(nil, transaccions, c, http.StatusOK)
 }
