@@ -25,17 +25,17 @@ func EnviarCodigoTemporal(c *gin.Context) {
 	switch rol {
 	case "admin-master":
 		admin := &models.AdminMaster{}
-		err = models.Db.Where("Usuario.usuario= ?", usuarioTemp.Usuario).Joins("Usuario").First(admin).Error
+		err = models.Db.Where("Usuario.correo= ?", usuarioTemp.Correo).Joins("Usuario").First(admin).Error
 
 		usuario = admin.Usuario
 	case "fiel":
 		res := &models.Fiel{}
-		err = models.Db.Where("Usuario.usuario= ?", usuarioTemp.Usuario).Joins("Usuario").First(res).Error
+		err = models.Db.Where("Usuario.correo= ?", usuarioTemp.Correo).Joins("Usuario").First(res).Error
 
 		usuario = res.Usuario
 	case "admin-parroquia":
 		admin := &models.AdminParroquia{}
-		err = models.Db.Where("Usuario.usuario= ?", usuarioTemp.Usuario).Joins("Usuario").First(admin).Error
+		err = models.Db.Where("Usuario.correo= ?", usuarioTemp.Correo).Joins("Usuario").First(admin).Error
 
 		usuario = admin.Usuario
 	default:
@@ -80,15 +80,15 @@ func CambioDeContrasena(c *gin.Context) {
 	switch rol {
 	case "admin-master":
 		admin := &models.AdminMaster{}
-		err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(admin).Error
+		err = models.Db.Where("Usuario.correo= ?", recover.Correo).Joins("Usuario").First(admin).Error
 		usuario = admin.Usuario
 	case "fiel":
 		res := &models.Fiel{}
-		err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(res).Error
+		err = models.Db.Where("Usuario.correo= ?", recover.Correo).Joins("Usuario").First(res).Error
 		usuario = res.Usuario
 	case "admin-parroquia":
 		admin := &models.AdminParroquia{}
-		err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(admin).Error
+		err = models.Db.Where("Usuario.correo= ?", recover.Correo).Joins("Usuario").First(admin).Error
 		usuario = admin.Usuario
 	default:
 		utils.CrearRespuesta(errors.New("No existe rol"), nil, c, http.StatusBadRequest)

@@ -47,11 +47,7 @@ func CreateAdministradorParroquia(c *gin.Context) {
 	if idParroquia != 0 {
 		adm.ParroquiaID = uint(idParroquia)
 	}
-	if adm.Usuario.Usuario == "" {
-		utils.CrearRespuesta(errors.New("Por favor Ingrese usuario y/o Contrasena"), nil, c, http.StatusBadRequest)
-		return
-	}
-	if err != nil || adm.Usuario.Usuario == "" {
+	if err != nil || adm.Usuario.Correo == "" {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
@@ -63,7 +59,7 @@ func CreateAdministradorParroquia(c *gin.Context) {
 		adm.EsMaster = true
 	}
 	adComp := &models.AdminParroquia{}
-	err = models.Db.Where("Usuario.usuario = ?", adm.Usuario.Usuario).Joins("Usuario").First(&adComp).Error
+	err = models.Db.Where("Usuario.correo = ?", adm.Usuario.Correo).Joins("Usuario").First(&adComp).Error
 
 	if errors.Is(gorm.ErrRecordNotFound, err) {
 
@@ -99,7 +95,7 @@ func CreateAdministradorParroquia(c *gin.Context) {
 		return
 	}
 	if adComp.ID != 0 {
-		utils.CrearRespuesta(errors.New("Ya existe un administrador con ese usuario"), nil, c, http.StatusNotAcceptable)
+		utils.CrearRespuesta(errors.New("Ya existe un administrador con ese correo"), nil, c, http.StatusNotAcceptable)
 		return
 	}
 	if err != nil {
@@ -123,7 +119,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 	adComp := &models.AdminParroquia{}
 	if adm.Usuario != nil {
 
-		err = models.Db.Where("Usuario.usuario = ?", adm.Usuario.Usuario).Joins("Usuario").First(&adComp).Error
+		err = models.Db.Where("Usuario.correo = ?", adm.Usuario.Correo).Joins("Usuario").First(&adComp).Error
 	}
 
 	if adm.Usuario == nil || errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {

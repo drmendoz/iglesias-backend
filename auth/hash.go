@@ -12,7 +12,7 @@ import (
 var JwtKey = []byte("my_secret_key")
 
 type Login struct {
-	Usuario           string `json:"usuario" binding:"required"`
+	Correo            string `json:"correo" binding:"required"`
 	Contrasena        string `json:"contrasena" binding:"required"`
 	TokenNotificacion string `json:"token_notificacion" `
 }

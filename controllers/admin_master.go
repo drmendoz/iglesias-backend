@@ -43,12 +43,12 @@ func CreateAdministrador(c *gin.Context) {
 	//rol := c.GetString("rol")
 	//isMaster := rol == "master"
 
-	if err != nil || adm.Usuario.Usuario == "" {
+	if err != nil || adm.Usuario.Correo == "" {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
 	adComp := &models.AdminMaster{}
-	err = models.Db.Where("Usuario.usuario = ?", adm.Usuario.Usuario).Joins("Usuario").First(&adComp).Error
+	err = models.Db.Where("Usuario.correo = ?", adm.Usuario.Correo).Joins("Usuario").First(&adComp).Error
 	fmt.Print(err)
 	if errors.Is(gorm.ErrRecordNotFound, err) {
 		adm.Usuario.Contrasena, _ = auth.GenerarCodigoTemporal(6)
@@ -127,7 +127,7 @@ func UpdateAdministrador(c *gin.Context) {
 	ui, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	adm.ID = uint(ui)
 	adComp := &models.AdminMaster{}
-	err = models.Db.Where("Usuario.usuario = ?", adm.Usuario.Usuario).Joins("Usuario").First(&adComp).Error
+	err = models.Db.Where("Usuario.correo = ?", adm.Usuario.Correo).Joins("Usuario").First(&adComp).Error
 	if errors.Is(gorm.ErrRecordNotFound, err) || adm.ID == adComp.ID {
 		adm.Usuario.ID = adComp.UsuarioID
 		adm.Usuario.Contrasena = auth.HashPassword(adm.Usuario.Contrasena)

@@ -20,22 +20,18 @@ import (
 func CreateFiel(c *gin.Context) {
 	res := &models.Fiel{}
 	err := c.ShouldBindJSON(res)
-	if res.Usuario.Usuario == "" {
-		utils.CrearRespuesta(errors.New("Por favor Ingrese usuario y/o Contrasena"), nil, c, http.StatusBadRequest)
+	if res.Usuario.Correo == "" {
+		utils.CrearRespuesta(errors.New("Por favor ingrese correo y/o Contrasena"), nil, c, http.StatusBadRequest)
 		return
 
 	}
-	if err != nil || res.Usuario.Usuario == "" {
+	if err != nil || res.Usuario.Correo == "" {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
 	res.Usuario.Contrasena, _ = auth.GenerarCodigoTemporal(6)
 	resComp := &models.Fiel{}
-	err = models.Db.Where("Usuario.usuario = ?", res.Usuario.Usuario).Joins("Usuario").Joins("Parroquia").First(&resComp).Error
-	if resComp.ID != 0 {
-		utils.CrearRespuesta(errors.New("Ya existe un usuario con ese nombre de usuario"), nil, c, http.StatusNotAcceptable)
-		return
-	}
+
 	err = models.Db.Where("Usuario.correo = ?", res.Usuario.Correo).Joins("Usuario").Joins("Parroquia").First(&resComp).Error
 	if resComp.ID != 0 {
 		utils.CrearRespuesta(errors.New("Ya existe un usuario con ese correo"), nil, c, http.StatusNotAcceptable)

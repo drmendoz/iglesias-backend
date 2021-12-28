@@ -7,7 +7,7 @@ import (
 
 type NuevaContrasena struct {
 	Contrasena     string `json:"nueva_contrasena"`
-	Usuario        string `json:"usuario"`
+	Correo         string `json:"correo"`
 	CodigoTemporal string `json:"codigo_temporal"`
 	Imagen         string `json:"imagen"`
 }

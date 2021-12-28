@@ -25,7 +25,7 @@ func LoginAdminMaster(c *gin.Context) {
 	}
 	adm := &models.AdminMaster{}
 	creds.Contrasena = auth.HashPassword(creds.Contrasena)
-	res := models.Db.Where("Usuario.usuario = ?", creds.Usuario).Joins("Usuario").Preload("Permisos").First(adm)
+	res := models.Db.Where("Usuario.correo = ?", creds.Correo).Joins("Usuario").Preload("Permisos").First(adm)
 	if res.Error != nil || creds.Contrasena != adm.Usuario.Contrasena {
 		utils.CrearRespuesta(errors.New("Usuario y/o contrasena incorrecta"), nil, c, http.StatusUnauthorized)
 		return
@@ -53,7 +53,7 @@ func LoginAdminParroquia(c *gin.Context) {
 	}
 	adm := &models.AdminParroquia{}
 	creds.Contrasena = auth.HashPassword(creds.Contrasena)
-	res := models.Db.Where("Usuario.usuario = ? ", creds.Usuario).Joins("Usuario").Preload("Parroquia").Preload("Permisos").First(adm)
+	res := models.Db.Where("Usuario.correo = ? ", creds.Correo).Joins("Usuario").Preload("Parroquia").Preload("Permisos").First(adm)
 	if res.Error != nil || creds.Contrasena != adm.Usuario.Contrasena {
 		utils.CrearRespuesta(errors.New("Usuario y/o contrasena incorrecta"), nil, c, http.StatusUnauthorized)
 		return
@@ -85,7 +85,7 @@ func LoginFiel(c *gin.Context) {
 	}
 	adm := &models.Fiel{}
 	creds.Contrasena = auth.HashPassword(creds.Contrasena)
-	err = models.Db.Where("Usuario.usuario = ? ", creds.Usuario).Joins("Usuario").Preload("Parroquia").First(adm).Error
+	err = models.Db.Where("Usuario.correo = ? ", creds.Correo).Joins("Usuario").Preload("Parroquia").First(adm).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.CrearRespuesta(errors.New("Usuario y/o contrasena incorrecta"), nil, c, http.StatusUnauthorized)
@@ -150,7 +150,7 @@ func CambioDeContrasenaFiel(c *gin.Context) {
 	}
 	usuario := &models.Usuario{}
 	res := &models.Fiel{}
-	err = models.Db.Where("Usuario.usuario= ?", recover.Usuario).Joins("Usuario").First(res).Error
+	err = models.Db.Where("Usuario.correo= ?", recover.Correo).Joins("Usuario").First(res).Error
 	usuario = res.Usuario
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
