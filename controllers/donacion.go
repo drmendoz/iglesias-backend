@@ -233,7 +233,7 @@ func GetAportacionesDeDonacion(c *gin.Context) {
 		return
 	}
 	aportaciones := []*models.Aportacion{}
-	err = models.Db.Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Find(&aportaciones).Error
+	err = models.Db.Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Preload("Fiel.Usuario").Find(&aportaciones).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
