@@ -219,3 +219,20 @@ func AportarDonacion(c *gin.Context) {
 	_ = tx.Commit()
 	utils.CrearRespuesta(nil, "Aportacion creada exitosamente", c, http.StatusOK)
 }
+
+func GetAportacionesDeDonacion(c *gin.Context) {
+	idDonacion := c.Param("id")
+	idD, err := strconv.Atoi(idDonacion)
+	if err != nil {
+		utils.CrearRespuesta(errors.New("Id incorrecto"), nil, c, http.StatusBadRequest)
+		return
+	}
+	aportaciones := []*models.Aportacion{}
+	err = models.Db.Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Find(&aportaciones).Error
+	if err != nil {
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
+		return
+	}
+	utils.CrearRespuesta(nil, aportaciones, c, http.StatusOK)
+}
