@@ -234,7 +234,7 @@ func GetAportacionesDeDonacion(c *gin.Context) {
 		return
 	}
 	donacion := &models.Donacion{}
-	err = models.Db.Preload("CategoriaDonacion").Find(&donacion).Error
+	err = models.Db.Preload("CategoriaDonacion").First(donacion, idD).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
