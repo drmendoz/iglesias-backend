@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
 	"github.com/drmendoz/iglesias-backend/utils/paymentez"
+	"github.com/drmendoz/iglesias-backend/utils/tiempo"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -227,6 +229,7 @@ type DonacionesTotal struct {
 }
 
 func GetAportacionesDeDonacion(c *gin.Context) {
+
 	idDonacion := c.Param("id")
 	idD, err := strconv.Atoi(idDonacion)
 	if err != nil {
@@ -240,9 +243,19 @@ func GetAportacionesDeDonacion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
 		return
 	}
+	fechaInicioQ := c.Query("fecha_inicio")
+	fechaFinQ := c.Query("fecha_fin")
+	fechaInicio, err := time.Parse("2006-01-02", fechaInicioQ)
+	if err != nil {
+		fechaInicio = time.Date(1970, time.December, 28, 23, 59, 0, 0, tiempo.Local)
+	}
 
+	fechaFin, err := time.Parse("2006-01-02", fechaFinQ)
+	if err != nil {
+		fechaFin = time.Date(3000, time.December, 28, 23, 59, 0, 0, tiempo.Local)
+	}
 	aportaciones := []*models.Aportacion{}
-	err = models.Db.Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Preload("Fiel.Usuario").Find(&aportaciones).Error
+	err = models.Db.Where("created_at between ? and ?", fechaInicio, fechaFin).Where(&models.Aportacion{DonacionID: uint(idD)}).Preload("Fiel").Preload("Fiel.Usuario").Find(&aportaciones).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
