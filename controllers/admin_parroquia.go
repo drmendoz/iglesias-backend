@@ -165,7 +165,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 			utils.CrearRespuesta(errors.New("Error al editar administrador"), nil, c, http.StatusInternalServerError)
 			return
 		}
-		err = tx.Model(&models.AdminMasterPermiso{}).Where("admin_parroquia_id = ?", ui).Updates(map[string]interface{}{
+		err = tx.Model(&models.AdminParroquiaPermiso{}).Where("admin_parroquia_id = ?", ui).Updates(map[string]interface{}{
 			"usuario":        adm.Permisos.Usuario,
 			"horario":        adm.Permisos.Horario,
 			"actividad":      adm.Permisos.Actividad,
