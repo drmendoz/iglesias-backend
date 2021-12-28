@@ -19,7 +19,7 @@ import (
 func GetDonacions(c *gin.Context) {
 	etps := []*models.Donacion{}
 	idParroquia := c.GetInt("id_parroquia")
-	err := models.Db.Where(&models.Donacion{ParroquiaID: uint(idParroquia)}).Order("created_at asc").Find(&etps).Error
+	err := models.Db.Where(&models.Donacion{ParroquiaID: uint(idParroquia)}).Order("created_at asc").Preload("CategoriaDonacion").Find(&etps).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener areas sociales"), nil, c, http.StatusInternalServerError)
