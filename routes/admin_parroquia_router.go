@@ -12,6 +12,7 @@ func administradorParroquiaRouter(r *gin.RouterGroup) {
 	admin.Use(middlewares.AuthMiddleWare())
 	admin.Use(middlewares.ParsingTokenAdminParroquia())
 	admin.POST("archivos", controllers.SubirArchivos)
+	transaccionRoutes(admin)
 	administradorParroquiaRoutes(admin)
 	administradorGaritaRoutes(admin)
 	parroquiaRoutes(admin)

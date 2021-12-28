@@ -33,9 +33,14 @@ func GetTransaccions(c *gin.Context) {
 	if err != nil {
 		idCat = 0
 	}
+
 	idPar, err := strconv.Atoi(idParroquia)
 	if err != nil {
 		idPar = 0
+	}
+	idParr := c.GetInt("id_parroquia")
+	if idParr != 0 {
+		idPar = idParr
 	}
 	transaccions := []*models.Transaccion{}
 	err = models.Db.Where("created_at between ? and ?", fechaInicio, fechaFin).Where(&models.Transaccion{TipoPagoType: modulo, ParroquiaID: uint(idPar), CategoriaID: uint(idCat)}).Preload("FielTarjeta.Fiel.Usuario").Find(&transaccions).Error
