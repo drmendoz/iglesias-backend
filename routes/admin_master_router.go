@@ -9,6 +9,8 @@ func administradorMasterRouter(r *gin.RouterGroup) {
 	admin := r.Group("master")
 	// admin.Use(middlewares.RolMasterMiddleware())
 	// admin.Use(middlewares.AuthMiddleWare())
+
+	admin.POST("archivos", controllers.SubirArchivos)
 	administradorMasterRoutes(admin)
 	administradorParroquiaRoutes(admin)
 	categoriaMarketRoutes(admin)

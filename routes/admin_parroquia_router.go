@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/drmendoz/iglesias-backend/controllers"
 	"github.com/drmendoz/iglesias-backend/middlewares"
 	"github.com/gin-gonic/gin"
 )
@@ -10,6 +11,7 @@ func administradorParroquiaRouter(r *gin.RouterGroup) {
 	admin.Use(middlewares.RolParroquiaAdminMiddleware())
 	admin.Use(middlewares.AuthMiddleWare())
 	admin.Use(middlewares.ParsingTokenAdminParroquia())
+	admin.POST("archivos", controllers.SubirArchivos)
 	administradorParroquiaRoutes(admin)
 	administradorGaritaRoutes(admin)
 	parroquiaRoutes(admin)
