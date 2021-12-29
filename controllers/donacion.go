@@ -19,7 +19,7 @@ import (
 func GetDonacions(c *gin.Context) {
 	etps := []*models.Donacion{}
 	idParroquia := c.GetInt("id_parroquia")
-	idCategoria := c.Param("id_categoria")
+	idCategoria := c.Query("id_categoria")
 	idCat, err := strconv.Atoi(idCategoria)
 	if err != nil {
 		idCat = 0
