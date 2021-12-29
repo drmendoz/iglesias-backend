@@ -71,6 +71,16 @@ func GetTransaccions(c *gin.Context) {
 					return
 				}
 				tr.NombreCategoria = cat.Nombre
+				if tr.CasoID != 0 {
+					don := &models.Donacion{}
+					err = models.Db.First(don, tr.CasoID).Error
+					if err != nil {
+						_ = c.Error(err)
+						utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+						return
+					}
+					tr.NombreCaso = don.Nombre
+				}
 			} else if tr.TipoPagoType == "emprendimiento" {
 				cat := &models.CategoriaMarket{}
 				err = models.Db.First(cat, tr.CategoriaID).Error
