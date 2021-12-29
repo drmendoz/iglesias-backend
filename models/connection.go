@@ -46,7 +46,7 @@ func init() {
 	}
 	utils.Log.Info("Conectado a: " + dsn)
 	if !utils.Viper.GetBool("PROD") {
-		//migrarTablas()
+		//	migrarTablas()
 	}
 }
 
