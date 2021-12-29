@@ -246,13 +246,16 @@ func ObtenerEmprendimientos(c *gin.Context) {
 			}
 
 		}
-		if emp.Fiel.Usuario.Imagen != "" {
-			if !strings.HasPrefix(emp.Fiel.Usuario.Imagen, "https://") {
-				emp.ImagenUsuario = utils.SERVIMG + emp.Fiel.Usuario.Imagen
+		if emp.Fiel != nil {
+			if emp.Fiel.Usuario.Imagen != "" {
+				if !strings.HasPrefix(emp.Fiel.Usuario.Imagen, "https://") {
+					emp.ImagenUsuario = utils.SERVIMG + emp.Fiel.Usuario.Imagen
+				}
 			}
+			emp.TelefonoUsuario = emp.Fiel.Usuario.Telefono
+			emp.NombreUsuario = emp.Fiel.Usuario.Usuario
 		}
-		emp.TelefonoUsuario = emp.Fiel.Usuario.Telefono
-		emp.NombreUsuario = emp.Fiel.Usuario.Usuario
+
 		emp.Imagenes = []string{}
 		for _, img := range emp.EmprendimientoImagenes {
 			if img.Imagen == "" {
@@ -281,13 +284,16 @@ func ObtenerEmprendimientos(c *gin.Context) {
 				emp.Imagen = utils.DefaultEmprendimiento
 			}
 		}
-		if emp.Fiel.Usuario.Imagen != "" {
-			if !strings.HasPrefix(emp.Fiel.Usuario.Imagen, "https://") {
-				emp.ImagenUsuario = utils.SERVIMG + emp.Fiel.Usuario.Imagen
+		if emp.Fiel != nil {
+			if emp.Fiel.Usuario.Imagen != "" {
+				if !strings.HasPrefix(emp.Fiel.Usuario.Imagen, "https://") {
+					emp.ImagenUsuario = utils.SERVIMG + emp.Fiel.Usuario.Imagen
+				}
 			}
+			emp.TelefonoUsuario = emp.Fiel.Usuario.Telefono
+			emp.NombreUsuario = emp.Fiel.Usuario.Usuario
 		}
-		emp.TelefonoUsuario = emp.Fiel.Usuario.Telefono
-		emp.NombreUsuario = emp.Fiel.Usuario.Usuario
+
 		for _, img := range emp.EmprendimientoImagenes {
 			if img.Imagen == "" {
 				img.Imagen = utils.DefaultEmprendimiento
