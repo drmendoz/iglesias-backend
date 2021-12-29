@@ -191,7 +191,7 @@ func AportarDonacion(c *gin.Context) {
 
 		}
 	}
-	aportacion.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, CategoriaID: donacion.CategoriaDonacionID, ParroquiaID: uint(idParroquia)}
+	aportacion.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, CategoriaID: donacion.CategoriaDonacionID, ParroquiaID: uint(idParroquia), CasoID: uint(idDon)}
 	err = tx.Create(aportacion).Error
 	if err != nil {
 		tx.Rollback()

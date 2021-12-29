@@ -23,4 +23,5 @@ type Transaccion struct {
 	Nombre             string       `json:"nombre" gorm:"-"`
 	Apellido           string       `json:"apellido" gorm:"-"`
 	Correo             string       `json:"correo" gorm:"-"`
+	NombreCategoria    string       `json:"nombre_categoria" gorm:"-"`
 }

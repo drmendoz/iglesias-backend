@@ -18,6 +18,7 @@ func GetTransaccions(c *gin.Context) {
 	modulo := c.Query("modulo")
 	idCategoria := c.Query("id_categoria")
 	idParroquia := c.Query("id_parroquia")
+	idCaso := c.Query("id_caso")
 	fechaInicioQ := c.Query("fecha_inicio")
 	fechaFinQ := c.Query("fecha_fin")
 	fechaInicio, err := time.Parse("2006-01-02", fechaInicioQ)
@@ -38,12 +39,16 @@ func GetTransaccions(c *gin.Context) {
 	if err != nil {
 		idPar = 0
 	}
+	idCas, err := strconv.Atoi(idCaso)
+	if err != nil {
+		idCas = 0
+	}
 	idParr := c.GetInt("id_parroquia")
 	if idParr != 0 {
 		idPar = idParr
 	}
 	transaccions := []*models.Transaccion{}
-	err = models.Db.Where("created_at between ? and ?", fechaInicio, fechaFin).Where(&models.Transaccion{TipoPagoType: modulo, ParroquiaID: uint(idPar), CategoriaID: uint(idCat)}).Preload("FielTarjeta.Fiel.Usuario").Find(&transaccions).Error
+	err = models.Db.Where("created_at between ? and ?", fechaInicio, fechaFin).Where(&models.Transaccion{TipoPagoType: modulo, ParroquiaID: uint(idPar), CategoriaID: uint(idCat), CasoID: uint(idCas)}).Preload("FielTarjeta.Fiel.Usuario").Find(&transaccions).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
@@ -56,6 +61,27 @@ func GetTransaccions(c *gin.Context) {
 			tr.Correo = tr.FielTarjeta.Fiel.Usuario.Correo
 		}
 		tr.FielTarjeta = nil
+		if tr.CategoriaID != 0 {
+			if tr.TipoPagoType == "aportacion" {
+				cat := &models.CategoriaDonacion{}
+				err = models.Db.First(cat, tr.CategoriaID).Error
+				if err != nil {
+					_ = c.Error(err)
+					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+					return
+				}
+				tr.NombreCategoria = cat.Nombre
+			} else if tr.TipoPagoType == "emprendimiento" {
+				cat := &models.CategoriaMarket{}
+				err = models.Db.First(cat, tr.CategoriaID).Error
+				if err != nil {
+					_ = c.Error(err)
+					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+					return
+				}
+				tr.NombreCategoria = cat.Nombre
+			}
+		}
 	}
 	utils.CrearRespuesta(nil, transaccions, c, http.StatusOK)
 }
