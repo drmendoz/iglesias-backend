@@ -21,7 +21,9 @@ func GetMusicas(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener musicas"), nil, c, http.StatusInternalServerError)
 		return
 	}
-
+	for _, mus := range etps {
+		mus.Media = utils.SERVIMG + mus.Media
+	}
 	utils.CrearRespuesta(nil, etps, c, http.StatusOK)
 }
 
@@ -38,6 +40,8 @@ func GetMusicaPorID(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener musica"), nil, c, http.StatusInternalServerError)
 		return
 	}
+
+	etp.Media = utils.SERVIMG + etp.Media
 
 	utils.CrearRespuesta(nil, etp, c, http.StatusOK)
 }
@@ -56,7 +60,9 @@ func GetMusicaDeUsuario(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener musica"), nil, c, http.StatusInternalServerError)
 		return
 	}
-
+	for _, mus := range etps {
+		mus.Media = utils.SERVIMG + mus.Media
+	}
 	utils.CrearRespuesta(nil, etps, c, http.StatusOK)
 }
 
