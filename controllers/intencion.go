@@ -96,7 +96,7 @@ func CreateIntencion(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al crear intención"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	if !parroquia.BotonPagoIntencion || etp.Monto == 0 {
+	if !*parroquia.BotonPagoIntencion || etp.Monto == 0 {
 		err = tx.Create(etp).Error
 		if err != nil {
 			tx.Rollback()

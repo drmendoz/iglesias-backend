@@ -18,13 +18,13 @@ type Parroquia struct {
 	NumeroCuenta            string           `json:"numero_cuenta"`
 	TipoDocumento           string           `json:"tipo_documento"`
 	NumeroDocumento         string           `json:"numero_documento"`
-	BotonPagoIntencion      bool             `json:"boton_pago_intencion"`
-	BotonPagoCurso          bool             `json:"boton_pago_curso"`
-	BotonPagoEmprendimiento bool             `json:"boton_pago_emprendimiento"`
-	BotonPagoMatrimonio     bool             `json:"boton_pago_matrimonio"`
-	BotonPagoActividad      bool             `json:"boton_pago_actividad"`
-	BotonPagoMusica         bool             `json:"boton_pago_musica"`
-	BotonAyudemos           bool             `json:"boton_pago_ayudemos" gorm:"default:false"`
+	BotonPagoIntencion      *bool            `json:"boton_pago_intencion"`
+	BotonPagoCurso          *bool            `json:"boton_pago_curso"`
+	BotonPagoEmprendimiento *bool            `json:"boton_pago_emprendimiento"`
+	BotonPagoMatrimonio     *bool            `json:"boton_pago_matrimonio"`
+	BotonPagoActividad      *bool            `json:"boton_pago_actividad"`
+	BotonPagoMusica         *bool            `json:"boton_pago_musica"`
+	BotonAyudemos           *bool            `json:"boton_pago_ayudemos" gorm:"default:false"`
 	CostoEmprendimiento     float64          `json:"costo_emprendimiento"`
 	IglesiaID               *uint            `json:"id_iglesia"`
 	Iglesia                 *Iglesia         `json:"iglesia"`
