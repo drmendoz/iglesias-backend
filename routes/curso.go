@@ -11,5 +11,6 @@ func cursoRoutes(r *gin.RouterGroup) {
 	admin.POST("", controllers.CreateCurso)
 	admin.PUT("/:id", controllers.UpdateCurso)
 	admin.GET("/:id", controllers.GetCursoPorID)
+	admin.GET("/:id/inscritos", controllers.GetInscritosTotal)
 	admin.DELETE("/:id", controllers.DeleteCurso)
 }

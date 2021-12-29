@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
 	"github.com/drmendoz/iglesias-backend/utils/paymentez"
+	"github.com/drmendoz/iglesias-backend/utils/tiempo"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -225,4 +227,52 @@ func InscribirCurso(c *gin.Context) {
 	}
 	_ = tx.Commit()
 	utils.CrearRespuesta(nil, "Inscripcion exitosa", c, http.StatusOK)
+}
+
+type CursosTotal struct {
+	Inscritos []*models.Inscrito `json:"inscritos"`
+	Monto     float64            `json:"monto"`
+	Curso     *models.Curso      `json:"curso"`
+}
+
+func GetInscritosTotal(c *gin.Context) {
+
+	idCurso := c.Param("id")
+	idD, err := strconv.Atoi(idCurso)
+	if err != nil {
+		utils.CrearRespuesta(errors.New("Id incorrecto"), nil, c, http.StatusBadRequest)
+		return
+	}
+	curso := &models.Curso{}
+	err = models.Db.First(curso, idD).Error
+	if err != nil {
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener inscritos"), nil, c, http.StatusInternalServerError)
+		return
+	}
+	fechaInicioQ := c.Query("fecha_inicio")
+	fechaFinQ := c.Query("fecha_fin")
+	fechaInicio, err := time.Parse("2006-01-02", fechaInicioQ)
+	if err != nil {
+		fechaInicio = time.Date(1970, time.December, 28, 23, 59, 0, 0, tiempo.Local)
+	}
+
+	fechaFin, err := time.Parse("2006-01-02", fechaFinQ)
+	if err != nil {
+		fechaFin = time.Date(3000, time.December, 28, 23, 59, 0, 0, tiempo.Local)
+	}
+	inscritos := []*models.Inscrito{}
+	err = models.Db.Where("created_at between ? and ?", fechaInicio, fechaFin).Where(&models.Inscrito{CursoID: uint(idD)}).Find(&inscritos).Error
+	if err != nil {
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener aportaciones"), nil, c, http.StatusInternalServerError)
+		return
+	}
+	total := &CursosTotal{}
+	for _, don := range inscritos {
+		total.Monto += don.Monto
+	}
+	total.Inscritos = inscritos
+	total.Curso = curso
+	utils.CrearRespuesta(nil, total, c, http.StatusOK)
 }

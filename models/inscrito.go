@@ -7,7 +7,7 @@ type Inscrito struct {
 	Nombre       string       `json:"nombre"`
 	Apellido     string       `json:"apellido"`
 	TokenTarjeta string       `json:"token_tarjeta" gorm:"-"`
-	Monto        float64      `json:"monto" gorm:"-"`
+	Monto        float64      `json:"monto"`
 	CursoID      uint         `json:"id_curso"`
 	Curso        *Curso       `json:"curso"`
 	FielID       uint         `json:"id_fiel"`
