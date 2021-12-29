@@ -17,7 +17,7 @@ func GetMatrimonios(c *gin.Context) {
 	etps := []*models.Matrimonio{}
 	estado := c.Query("estado")
 	idParroquia := c.GetInt("id_parroquia")
-	err := models.Db.Where(&models.Matrimonio{ParroquiaID: uint(idParroquia), Estado: estado}).Preload("MatrimonioImagenes").Order("created_at asc").Find(&etps).Error
+	err := models.Db.Where(&models.Matrimonio{ParroquiaID: uint(idParroquia), Estado: estado}).Order("created_at asc").Find(&etps).Error
 
 	for _, mat := range etps {
 		mat.Imagen = utils.SERVIMG + mat.Imagen
@@ -63,7 +63,7 @@ func CreateMatrimonio(c *gin.Context) {
 
 	tx := models.Db.Begin()
 	//if mat.Monto == 0 {
-
+	mat.Estado = "PEN"
 	err = tx.Omit("imagen").Create(mat).Error
 	if err != nil {
 		tx.Rollback()
@@ -84,7 +84,7 @@ func CreateMatrimonio(c *gin.Context) {
 
 			return
 		}
-		err = tx.Model(&models.Galeria{}).Where("id = ?", mat.ID).Update("imagen", mat.Imagen).Error
+		err = tx.Model(&models.Matrimonio{}).Where("id = ?", mat.ID).Update("imagen", mat.Imagen).Error
 		if err != nil {
 			_ = c.Error(err)
 			tx.Rollback()
