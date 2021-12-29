@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
@@ -78,6 +79,12 @@ func UpdateCurso(c *gin.Context) {
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
+	}
+	if strings.HasPrefix(etp.Imagen, "https://") {
+		etp.Imagen = ""
+	}
+	if strings.HasPrefix(etp.Video, "https://") {
+		etp.Video = ""
 	}
 	tx := models.Db.Begin()
 	id := c.Param("id")

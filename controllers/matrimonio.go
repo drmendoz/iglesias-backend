@@ -21,13 +21,14 @@ func GetMatrimonios(c *gin.Context) {
 
 	for _, mat := range etps {
 		mat.Imagen = utils.SERVIMG + mat.Imagen
-
+		mat.DiferenciaFecha = mat.FechaMatrimonio.Sub(mat.CreatedAt)
 	}
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener matrimonios"), nil, c, http.StatusInternalServerError)
 		return
 	}
+
 	utils.CrearRespuesta(nil, etps, c, http.StatusOK)
 }
 

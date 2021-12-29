@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
@@ -91,6 +92,9 @@ func UpdateMusica(c *gin.Context) {
 	if err != nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
+	}
+	if strings.HasPrefix(etp.Media, "https://") {
+		etp.Media = ""
 	}
 	tx := models.Db.Begin()
 	id := c.Param("id")
