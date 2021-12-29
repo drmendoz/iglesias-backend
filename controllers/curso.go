@@ -95,6 +95,14 @@ func UpdateCurso(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al actualizar curso"), nil, c, http.StatusInternalServerError)
 		return
 	}
+
+	err = tx.Model(&models.Curso{}).Where(" id = ?", id).Update("tiene_limite", etp.TieneLimite).Error
+	if err != nil {
+		tx.Rollback()
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al actualizar curso"), nil, c, http.StatusInternalServerError)
+		return
+	}
 	tx.Commit()
 	utils.CrearRespuesta(err, "Curso actualizada correctamente", c, http.StatusOK)
 }
