@@ -9,6 +9,7 @@ import (
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
 	"github.com/drmendoz/iglesias-backend/utils/img"
+	"github.com/drmendoz/iglesias-backend/utils/tiempo"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -21,7 +22,12 @@ func GetMatrimonios(c *gin.Context) {
 
 	for _, mat := range etps {
 		mat.Imagen = utils.SERVIMG + mat.Imagen
-		mat.DiferenciaFecha = mat.FechaMatrimonio.Sub(mat.CreatedAt)
+		numAnos := time.Now().In(tiempo.Local).Year() - mat.FechaMatrimonio.Year()
+		numes := mat.FechaMatrimonio.Month()-time.Now().In(tiempo.Local).Month() > 0
+		if numes {
+			numAnos--
+		}
+		mat.DiferenciaFecha = numAnos
 	}
 	if err != nil {
 		_ = c.Error(err)
