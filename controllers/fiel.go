@@ -248,7 +248,7 @@ func CambiarContrasenaFiel(c *gin.Context) {
 	err = models.Db.Select("contrasena").First(usrTmp, idUsuario).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.CrearRespuesta(errors.New("No existe usuario"), nil, c, http.StatusNotFound)
+			utils.CrearRespuesta(errors.New("Correo no válido"), nil, c, http.StatusNotFound)
 			return
 		}
 		_ = c.Error(err)

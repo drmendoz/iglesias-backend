@@ -154,7 +154,7 @@ func CambioDeContrasenaFiel(c *gin.Context) {
 	usuario = res.Usuario
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.CrearRespuesta(errors.New("No existe usuario"), nil, c, http.StatusBadRequest)
+			utils.CrearRespuesta(errors.New("Correo no válido"), nil, c, http.StatusBadRequest)
 			return
 		}
 		_ = c.Error(err)
