@@ -175,26 +175,46 @@ func UpdateModulosParroquia(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-
+	idMod, _ := strconv.Atoi(id)
 	tx := models.Db.Begin()
-
-	err = tx.Model(&models.ModulosParroquia{}).Where("parroquia_id = ?", id).Updates(map[string]interface{}{
-		"horario":        etp.Horario,
-		"actividad":      etp.Actividad,
-		"emprendimiento": etp.Emprendimiento,
-		"intencion":      etp.Intencion,
-		"musica":         etp.Musica,
-		"ayudemos":       etp.Ayudemos,
-		"galeria":        etp.Galeria,
-		"matrimonio":     etp.Matrimonio,
-		"publicacion":    etp.Publicacion,
-		"curso":          etp.Curso,
-	}).Error
+	var count int64
+	err = tx.Model(&models.ModulosParroquia{}).Where("parroquia_id = ?", id).Count(&count).Error
 	if err != nil {
 		_ = c.Error(err)
 		tx.Rollback()
 		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
 		return
+	}
+	if count > 0 {
+
+		err = tx.Model(&models.ModulosParroquia{}).Where("parroquia_id = ?", id).Updates(map[string]interface{}{
+			"horario":        etp.Horario,
+			"actividad":      etp.Actividad,
+			"emprendimiento": etp.Emprendimiento,
+			"intencion":      etp.Intencion,
+			"musica":         etp.Musica,
+			"ayudemos":       etp.Ayudemos,
+			"galeria":        etp.Galeria,
+			"matrimonio":     etp.Matrimonio,
+			"publicacion":    etp.Publicacion,
+			"curso":          etp.Curso,
+		}).Error
+		if err != nil {
+			_ = c.Error(err)
+			tx.Rollback()
+			utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
+			return
+		}
+
+	} else {
+		etp.ParroquiaID = uint(idMod)
+		err = tx.Create(etp).Error
+		if err != nil {
+			_ = c.Error(err)
+			tx.Rollback()
+			utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
+			return
+		}
 	}
 	tx.Commit()
 	utils.CrearRespuesta(err, "Parroquia actualizada correctamente", c, http.StatusOK)
