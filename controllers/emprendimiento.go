@@ -12,7 +12,6 @@ import (
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
 	"github.com/drmendoz/iglesias-backend/utils/img"
-	"github.com/drmendoz/iglesias-backend/utils/paymentez"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -60,79 +59,79 @@ func CreateEmprendimiento(c *gin.Context) {
 	item.ParroquiaID = idParroquia
 	item.FielID = idFiel
 
-	if !parroquia.BotonPagoEmprendimiento {
-		err = tx.Create(item).Error
-		if err != nil {
-			_ = tx.Rollback()
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al crear item"), nil, c, http.StatusInternalServerError)
-			return
-		}
-		_ = tx.Commit()
-		utils.CrearRespuesta(err, "Emprendimiento creado correctamente", c, http.StatusCreated)
-	}
-	fiel := &models.Fiel{}
-	err = tx.Joins("Usuario").Find(fiel, idFiel).Error
-	if err != nil {
-		tx.Rollback()
-		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
-		return
-	}
-	if item.TokenTarjeta == "" {
-		_ = tx.Rollback()
-		utils.CrearRespuesta(errors.New("Ingrese tarjeta de credito para subir emprendimiento"), nil, c, http.StatusBadRequest)
-		return
-	}
-	tarjeta := &models.FielTarjeta{}
-	err = tx.Where("token_tarjeta = ?", item.TokenTarjeta).First(tarjeta).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			tarjeta.TokenTarjeta = item.TokenTarjeta
-			tarjeta.FielID = uint(idFiel)
-			err = tx.Create(&tarjeta).Error
-			if err != nil {
-				tx.Rollback()
-				_ = c.Error(err)
-				utils.CrearRespuesta(errors.New("Error con tarjeta"), nil, c, http.StatusInternalServerError)
-				return
-			}
-		} else {
-
-			tx.Rollback()
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
-			return
-
-		}
-	}
-	item.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, CategoriaID: item.CategoriaMarketID, ParroquiaID: idParroquia}
+	//if !parroquia.BotonPagoEmprendimiento {
 	err = tx.Create(item).Error
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
+		utils.CrearRespuesta(errors.New("Error al crear item"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	idTrans := fmt.Sprintf("%d", item.Transaccion.ID)
-	descripcion := fmt.Sprintf("Pago  de subir emprendimiento # %d", item.ID)
-	idFi := fmt.Sprintf("%d", idFiel)
-	cobro, err := paymentez.CobrarTarjeta(idFi, fiel.Usuario.Correo, parroquia.CostoEmprendimiento, descripcion, idTrans, 0, item.TokenTarjeta)
-	if err != nil {
-		tx.Rollback()
-		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al debitar tarjeta"), nil, c, http.StatusPaymentRequired)
-		return
-	}
-	montoReal := fmt.Sprintf("%f", cobro.Transaccion.Monto)
-	transNueva := &models.Transaccion{Estado: cobro.Transaccion.Status, DiaPago: cobro.Transaccion.FechaPago, Monto: montoReal, CodigoAutorizacion: cobro.Transaccion.CodigoAutorizacion, Mensaje: cobro.Transaccion.Mensaje, Descripcion: descripcion, FielTarjetaID: tarjeta.ID}
-	err = tx.Where("id = ?", item.Transaccion.ID).Updates(transNueva).Error
-	if err != nil {
-		_ = c.Error(err)
-		tx.Rollback()
-		utils.CrearRespuesta(nil, "Emprendimiento creado exitosamente", c, http.StatusOK)
-		return
-	}
+	_ = tx.Commit()
+	utils.CrearRespuesta(err, "Emprendimiento creado correctamente", c, http.StatusCreated)
+	//}
+	// fiel := &models.Fiel{}
+	// err = tx.Joins("Usuario").Find(fiel, idFiel).Error
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	_ = c.Error(err)
+	// 	utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
+	// 	return
+	// }
+	// if item.TokenTarjeta == "" {
+	// 	_ = tx.Rollback()
+	// 	utils.CrearRespuesta(errors.New("Ingrese tarjeta de credito para subir emprendimiento"), nil, c, http.StatusBadRequest)
+	// 	return
+	// }
+	// tarjeta := &models.FielTarjeta{}
+	// err = tx.Where("token_tarjeta = ?", item.TokenTarjeta).First(tarjeta).Error
+	// if err != nil {
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		tarjeta.TokenTarjeta = item.TokenTarjeta
+	// 		tarjeta.FielID = uint(idFiel)
+	// 		err = tx.Create(&tarjeta).Error
+	// 		if err != nil {
+	// 			tx.Rollback()
+	// 			_ = c.Error(err)
+	// 			utils.CrearRespuesta(errors.New("Error con tarjeta"), nil, c, http.StatusInternalServerError)
+	// 			return
+	// 		}
+	// 	} else {
+
+	// 		tx.Rollback()
+	// 		_ = c.Error(err)
+	// 		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
+	// 		return
+
+	// 	}
+	// }
+	// item.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, CategoriaID: item.CategoriaMarketID, ParroquiaID: idParroquia}
+	// err = tx.Create(item).Error
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	_ = c.Error(err)
+	// 	utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
+	// 	return
+	// }
+	// idTrans := fmt.Sprintf("%d", item.Transaccion.ID)
+	// descripcion := fmt.Sprintf("Pago  de subir emprendimiento # %d", item.ID)
+	// idFi := fmt.Sprintf("%d", idFiel)
+	// cobro, err := paymentez.CobrarTarjeta(idFi, fiel.Usuario.Correo, parroquia.CostoEmprendimiento, descripcion, idTrans, 0, item.TokenTarjeta)
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	_ = c.Error(err)
+	// 	utils.CrearRespuesta(errors.New("Error al debitar tarjeta"), nil, c, http.StatusPaymentRequired)
+	// 	return
+	// }
+	// montoReal := fmt.Sprintf("%f", cobro.Transaccion.Monto)
+	// transNueva := &models.Transaccion{Estado: cobro.Transaccion.Status, DiaPago: cobro.Transaccion.FechaPago, Monto: montoReal, CodigoAutorizacion: cobro.Transaccion.CodigoAutorizacion, Mensaje: cobro.Transaccion.Mensaje, Descripcion: descripcion, FielTarjetaID: tarjeta.ID}
+	// err = tx.Where("id = ?", item.Transaccion.ID).Updates(transNueva).Error
+	// if err != nil {
+	// 	_ = c.Error(err)
+	// 	tx.Rollback()
+	// 	utils.CrearRespuesta(nil, "Emprendimiento creado exitosamente", c, http.StatusOK)
+	// 	return
+	// }
 	_ = tx.Commit()
 	utils.CrearRespuesta(nil, "Emprendimiento creado exitosamente", c, http.StatusOK)
 
