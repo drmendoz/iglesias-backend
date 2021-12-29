@@ -120,6 +120,15 @@ func UpdateParroquia(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al actualizar etapa"), nil, c, http.StatusInternalServerError)
 		return
 	}
+	err = tx.Model(&models.Parroquia{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"boton_pago_matrimonio":     etp.BotonPagoMatrimonio,
+		"boton_pago_emprendimiento": etp.BotonPagoEmprendimiento,
+		"boton_pago_curso":          etp.BotonPagoCurso,
+		"boton_pago_intencion":      etp.BotonPagoIntencion,
+		"boton_pago_actividad":      etp.BotonPagoActividad,
+		"boton_pago_musica":         etp.BotonPagoMusica,
+		"boton_ayudemos":            etp.BotonAyudemos,
+	}).Error
 	if err != nil {
 		_ = c.Error(err)
 		tx.Rollback()
