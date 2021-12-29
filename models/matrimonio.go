@@ -13,6 +13,7 @@ type Matrimonio struct {
 	NombrePersona2     string              `json:"nombre_persona_2"`
 	ApellidoPersona2   string              `json:"apellido_persona_2"`
 	FechaMatrimonio    *time.Time          `json:"fecha_matrimonio"`
+	Estado             string              `json:"estado" gorm:"type:enum('PEN','PUB') default:'PEN'"`
 	FielID             uint                `json:"id_fiel"`
 	Fiel               *Fiel               `json:"fiel"`
 	ParroquiaID        uint                `json:"id_parroquia"`

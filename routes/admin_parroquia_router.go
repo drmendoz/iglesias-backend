@@ -34,5 +34,4 @@ func administradorParroquiaRouter(r *gin.RouterGroup) {
 	matrimonioRoutes(admin)
 	galeriaRoutes(admin)
 	intencionRoutes(admin)
-	itemMarketRoutes(admin)
 }
