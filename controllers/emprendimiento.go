@@ -26,7 +26,7 @@ type EmprendimientoResponse struct {
 var p = message.NewPrinter(language.English)
 
 func CreateEmprendimiento(c *gin.Context) {
-	idFiel := uint(c.GetInt("id_fiel"))
+	//idFiel := uint(c.GetInt("id_fiel"))
 	idParroquia := uint(c.GetInt("id_parroquia"))
 	item := &models.Emprendimiento{}
 	err := c.ShouldBindJSON(item)
@@ -57,7 +57,7 @@ func CreateEmprendimiento(c *gin.Context) {
 		}
 	}
 	item.ParroquiaID = idParroquia
-	item.FielID = idFiel
+	//item.FielID = &idFiel
 
 	//if !parroquia.BotonPagoEmprendimiento {
 	err = tx.Create(item).Error
@@ -69,6 +69,7 @@ func CreateEmprendimiento(c *gin.Context) {
 	}
 	_ = tx.Commit()
 	utils.CrearRespuesta(err, "Emprendimiento creado correctamente", c, http.StatusCreated)
+	return
 	//}
 	// fiel := &models.Fiel{}
 	// err = tx.Joins("Usuario").Find(fiel, idFiel).Error
@@ -132,8 +133,8 @@ func CreateEmprendimiento(c *gin.Context) {
 	// 	utils.CrearRespuesta(nil, "Emprendimiento creado exitosamente", c, http.StatusOK)
 	// 	return
 	// }
-	_ = tx.Commit()
-	utils.CrearRespuesta(nil, "Emprendimiento creado exitosamente", c, http.StatusOK)
+	//_ = tx.Commit()
+	//utils.CrearRespuesta(nil, "Emprendimiento creado exitosamente", c, http.StatusOK)
 
 }
 
@@ -348,7 +349,7 @@ func ObtenerEmprendimientosUsuarios(c *gin.Context) {
 
 	emps := []*models.Emprendimiento{}
 
-	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), FielID: idFiel}).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Order("created_at desc").Find(&emps).Error
+	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), FielID: &idFiel}).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Order("created_at desc").Find(&emps).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener emprendimientos"), nil, c, http.StatusInternalServerError)

@@ -22,7 +22,7 @@ type Emprendimiento struct {
 	TokenTarjeta           string                  `json:"token_tarjeta" gorm:"-"`
 	//FechaPublicacion       time.Time               `json:"fecha_publicacion"`
 	//	FechaVencimiento       time.Time               `json:"fecha_vencimiento"`
-	FielID            uint             `json:"id_fiel"`
+	FielID            *uint            `json:"id_fiel"`
 	ParroquiaID       uint             `json:"id_parroquia"`
 	Transaccion       *Transaccion     `json:"transaccion" gorm:"polymorphic:TipoPago"`
 	CategoriaMarketID uint             `json:"id_categoria"`
