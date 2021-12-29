@@ -22,6 +22,10 @@ func GetCursos(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener areas sociales"), nil, c, http.StatusInternalServerError)
 		return
 	}
+	for _, curs := range etps {
+		curs.Imagen = utils.SERVIMG + curs.Imagen
+		curs.Video = utils.SERVIMG + curs.Video
+	}
 	utils.CrearRespuesta(nil, etps, c, http.StatusOK)
 }
 
