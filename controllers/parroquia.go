@@ -63,6 +63,7 @@ func CreateParroquia(c *gin.Context) {
 		return
 	}
 	tx := models.Db.Begin()
+	etp.Modulos = models.ModulosParroquia{ParroquiaID: etp.ID, Horario: true, Actividad: true, Emprendimiento: true, Intencion: true, Musica: true, Ayudemos: true, Curso: true, Matrimonio: true, Galeria: true, Publicacion: true}
 	err = tx.Omit("imagen").Create(etp).Error
 	if err != nil {
 		tx.Rollback()
@@ -84,13 +85,7 @@ func CreateParroquia(c *gin.Context) {
 
 			return
 		}
-		err = tx.Model(&models.ModulosParroquia{}).Create(&models.ModulosParroquia{ParroquiaID: etp.ID, Horario: true, Actividad: true, Emprendimiento: true, Intencion: true, Musica: true, Ayudemos: true, Curso: true, Matrimonio: true, Galeria: true, Publicacion: true}).Error
-		if err != nil {
-			_ = c.Error(err)
-			tx.Rollback()
-			utils.CrearRespuesta(errors.New("Error al crear etapa "), nil, c, http.StatusInternalServerError)
-			return
-		}
+
 		err = tx.Model(&models.Parroquia{}).Where("id = ?", etp.ID).Update("imagen", etp.Imagen).Error
 		if err != nil {
 			_ = c.Error(err)
