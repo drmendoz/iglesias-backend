@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/drmendoz/iglesias-backend/models"
@@ -165,6 +166,9 @@ func UpdateMatrimonio(c *gin.Context) {
 	}
 	tx := models.Db.Begin()
 	id := c.Param("id")
+	if strings.HasPrefix(mat.Imagen, "https://") {
+		mat.Imagen = ""
+	}
 	err = tx.Where("id = ?", id).Updates(mat).Error
 	if err != nil {
 		tx.Rollback()
