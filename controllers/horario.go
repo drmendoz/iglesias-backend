@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/drmendoz/iglesias-backend/models"
@@ -129,6 +130,7 @@ func UpdateHorario(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
+	idH, _ := strconv.Atoi(id)
 	tx := models.Db.Begin()
 	err = tx.Omit("imagen").Where("id = ?", id).Updates(horario).Error
 	if err != nil {
@@ -137,7 +139,7 @@ func UpdateHorario(c *gin.Context) {
 		return
 	}
 	if img.IsBase64(horario.Imagen) {
-		idUrb := fmt.Sprintf("%d", horario.ID)
+		idUrb := fmt.Sprintf("%d", idH)
 		horario.Imagen, err = img.FromBase64ToImage(horario.Imagen, "horarios/"+time.Now().Format(time.RFC3339)+idUrb, false)
 		if err != nil {
 			_ = c.Error(err)
@@ -156,7 +158,7 @@ func UpdateHorario(c *gin.Context) {
 	} else {
 		horario.Imagen = utils.DefaultHorario
 	}
-	err = tx.Delete(&models.HorarioEntrada{HorarioID: horario.ID}).Error
+	err = tx.Where("horario_id = ?", idH).Delete(&models.HorarioEntrada{}).Error
 	if err != nil {
 		_ = c.Error(err)
 		tx.Rollback()
@@ -164,7 +166,7 @@ func UpdateHorario(c *gin.Context) {
 		return
 	}
 	for _, hora := range horario.Horarios {
-		err = tx.Create(&models.HorarioEntrada{HorarioID: horario.ID, Descripcion: hora}).Error
+		err = tx.Create(&models.HorarioEntrada{HorarioID: uint(idH), Descripcion: hora}).Error
 		if err != nil {
 			_ = c.Error(err)
 			tx.Rollback()

@@ -47,10 +47,18 @@ func CreateAdministradorParroquia(c *gin.Context) {
 	if idParroquia != 0 {
 		adm.ParroquiaID = uint(idParroquia)
 	}
-	if err != nil || adm.Usuario.Correo == "" {
+	if err != nil || adm.Usuario == nil {
 		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
 		return
 	}
+	parroquia := &models.Parroquia{}
+	err = models.Db.First(parroquia, idParroquia).Error
+	if err != nil {
+		_ = c.Error(err)
+		utils.CrearRespuesta(errors.New("Error al obtener parroquia"), nil, c, http.StatusCreated)
+		return
+	}
+	adm.Usuario.Correo = parroquia.Correo
 	if isMaster {
 		adm.Permisos = models.AdminParroquiaPermiso{Usuario: true, Horario: true,
 			Emprendimiento: true, Actividad: true, Intencion: true, Musica: true,
