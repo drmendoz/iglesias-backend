@@ -106,7 +106,7 @@ func GetTransaccions(c *gin.Context) {
 				}
 				tr.NombreCaso = don.Titulo
 			}
-		} else if tr.TipoPagoType == "intecion" {
+		} else if tr.TipoPagoType == "intencion" {
 
 			if tr.CasoID != 0 {
 				don := &models.Intencion{}
