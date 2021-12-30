@@ -43,6 +43,9 @@ func CreateAdministradorParroquia(c *gin.Context) {
 	rol := c.GetString("rol")
 	isMaster := rol == "master"
 	err := c.ShouldBindJSON(adm)
+	println(idParroquia)
+	println(idParroquia != 0)
+
 	if idParroquia != 0 {
 		adm.ParroquiaID = uint(idParroquia)
 	}
@@ -51,7 +54,7 @@ func CreateAdministradorParroquia(c *gin.Context) {
 		return
 	}
 	parroquia := &models.Parroquia{}
-	err = models.Db.First(parroquia, idParroquia).Error
+	err = models.Db.First(parroquia, adm.ParroquiaID).Error
 	if err != nil {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener parroquia"), nil, c, http.StatusCreated)
