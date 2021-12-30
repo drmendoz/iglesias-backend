@@ -198,7 +198,7 @@ func InscribirCurso(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener informacion"), nil, c, http.StatusInternalServerError)
 		return
 	}
-	inscrito.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, ParroquiaID: uint(idParroquia)}
+	inscrito.Transaccion = &models.Transaccion{FielTarjetaID: tarjeta.ID, ParroquiaID: uint(idParroquia), CasoID: uint(idCurso)}
 	err = tx.Create(inscrito).Error
 	if err != nil {
 		tx.Rollback()

@@ -119,14 +119,15 @@ func GetTransaccions(c *gin.Context) {
 				tr.NombreCaso = don.Nombre
 			}
 		} else if tr.TipoPagoType == "inscritos" {
-			if tr.CasoID != 0 {
+			if tr.TipoPagoID != 0 {
 				don := &models.Inscrito{}
-				err = models.Db.Preload("Curso").First(don, tr.CasoID).Error
+				err = models.Db.Preload("Curso").First(don, tr.TipoPagoID).Error
 				if err != nil {
 					_ = c.Error(err)
 					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
 					return
 				}
+
 				nombre := don.Nombre + " " + don.Apellido
 				tr.NombreCaso = fmt.Sprintf("Inscripcion %s a curso %s", nombre, don.Curso.Titulo)
 			}
