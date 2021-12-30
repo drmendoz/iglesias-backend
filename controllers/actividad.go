@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
@@ -18,6 +19,10 @@ func GetActividads(c *gin.Context) {
 		_ = c.Error(err)
 		utils.CrearRespuesta(errors.New("Error al obtener misas"), nil, c, http.StatusInternalServerError)
 		return
+	}
+	for _, act := range etps {
+		act.Imagen = utils.SERVIMG + act.Imagen
+		act.Video = utils.SERVIMG + act.Video
 	}
 	utils.CrearRespuesta(err, etps, c, http.StatusOK)
 }
@@ -35,7 +40,8 @@ func GetActividadPorId(c *gin.Context) {
 		utils.CrearRespuesta(errors.New("Error al obtener misa"), nil, c, http.StatusInternalServerError)
 		return
 	}
-
+	etp.Imagen = utils.SERVIMG + etp.Imagen
+	etp.Video = utils.SERVIMG + etp.Video
 	utils.CrearRespuesta(nil, etp, c, http.StatusOK)
 }
 
@@ -73,8 +79,22 @@ func UpdateActividad(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
+	if strings.HasPrefix(etp.Imagen, "https://") {
+		etp.Imagen = ""
+	}
+	if strings.HasPrefix(etp.Video, "https://") {
+		etp.Video = ""
+	}
 	tx := models.Db.Begin()
 	err = tx.Where("id = ?", id).Updates(etp).Error
+	if err != nil {
+		_ = c.Error(err)
+		tx.Rollback()
+		utils.CrearRespuesta(errors.New("Error al actualizar misa"), nil, c, http.StatusInternalServerError)
+		return
+	}
+
+	err = tx.Model(&models.Actividad{}).Where(" id = ?", id).Update("tiene_limite", etp.TieneLimite).Error
 	if err != nil {
 		_ = c.Error(err)
 		tx.Rollback()
