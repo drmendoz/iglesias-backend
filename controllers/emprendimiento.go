@@ -433,7 +433,7 @@ func ActualizarEmprendimiento(c *gin.Context) {
 	item.EmprendimientoImagenes = []*models.EmprendimientoImagen{}
 	for _, imagen := range item.Imagenes {
 		empImagen := &models.EmprendimientoImagen{}
-		if !strings.HasPrefix("https", imagen) {
+		if !strings.HasPrefix(imagen, "https://") {
 			imagen = utils.SERVIMG + imagen
 		}
 		empImagen.Imagen = imagen

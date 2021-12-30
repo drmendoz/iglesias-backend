@@ -22,6 +22,7 @@ func administradorMasterRouter(r *gin.RouterGroup) {
 	permisoRoutes(admin)
 	iglesiaRoutes(admin)
 	donacionRoutes(admin)
+	cursoRoutes(admin)
 	admin.GET("fieles", controllers.GetFieles)
 	admin.PUT("/parroquia/modulos/:id", controllers.UpdateModulosParroquia)
 }
