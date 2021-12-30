@@ -94,6 +94,14 @@ func UpdateActividad(c *gin.Context) {
 		return
 	}
 
+	err = tx.Model(&models.Actividad{}).Where(" id = ?", id).Update("tiene_limite", etp.TieneLimite).Error
+	if err != nil {
+		_ = c.Error(err)
+		tx.Rollback()
+		utils.CrearRespuesta(errors.New("Error al actualizar misa"), nil, c, http.StatusInternalServerError)
+		return
+	}
+
 	tx.Commit()
 	utils.CrearRespuesta(err, "Actividad actualizada correctamente", c, http.StatusOK)
 }
