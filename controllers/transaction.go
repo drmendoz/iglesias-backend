@@ -127,7 +127,7 @@ func GetTransaccions(c *gin.Context) {
 					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
 					return
 				}
-				nombre := don.Nombre + don.Apellido
+				nombre := don.Nombre + " " + don.Apellido
 				tr.NombreCaso = fmt.Sprintf("Inscripcion %s a curso %s", nombre, don.Curso.Titulo)
 			}
 		} else if tr.TipoPagoType == "matrimonios" {
