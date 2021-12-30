@@ -167,7 +167,7 @@ func ObtenerEmprendimientos(c *gin.Context) {
 	emps.Recomendados = []*models.Emprendimiento{}
 
 	//Recomendados
-	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat)}).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
+	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat)}).Where("titulo like ?", "%"+filtro+"%").Joins("CategoriaMarket").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id", "imagen", "telefono", "usuario", "telefono")
 	}).Order("created_at desc").Find(&emps.Recomendados).Error
 	if err != nil {
@@ -177,7 +177,7 @@ func ObtenerEmprendimientos(c *gin.Context) {
 	}
 
 	//Cercas
-	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), ParroquiaID: uint(idParroquia)}).Where("titulo like ?", "%"+filtro+"%").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
+	err = models.Db.Where(&models.Emprendimiento{CategoriaMarketID: uint(idCat), ParroquiaID: uint(idParroquia)}).Where("titulo like ?", "%"+filtro+"%").Joins("CategoriaMarket").Preload("EmprendimientoImagenes").Preload("Fiel.Usuario", func(tx *gorm.DB) *gorm.DB {
 		return tx.Select("id", "imagen", "telefono", "usuario")
 	}).Order("created_at desc").Find(&emps.Cercas).Error
 	if err != nil {

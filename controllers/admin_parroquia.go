@@ -212,7 +212,7 @@ func UpdateAdministradorParroquia(c *gin.Context) {
 func GetAdministradorParroquiaPorId(c *gin.Context) {
 	adm := &models.AdminMaster{}
 	id := c.Param("id")
-	err := models.Db.Where("admin_etapa.id = ?", id).Omit("usuarios.contrasena").Joins("Usuario").Preload("Permisos").First(adm).Error
+	err := models.Db.Omit("usuarios.contrasena").Joins("Usuario").Preload("Permisos").First(adm, id).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
