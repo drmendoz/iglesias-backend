@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -61,8 +62,9 @@ func GetTransaccions(c *gin.Context) {
 			tr.Correo = tr.FielTarjeta.Fiel.Usuario.Correo
 		}
 		tr.FielTarjeta = nil
-		if tr.CategoriaID != 0 {
-			if tr.TipoPagoType == "aportacion" {
+		tr.NombreCategoria = tr.TipoPagoType
+		if tr.TipoPagoType == "aportacion" {
+			if tr.CategoriaID != 0 {
 				cat := &models.CategoriaDonacion{}
 				err = models.Db.First(cat, tr.CategoriaID).Error
 				if err != nil {
@@ -71,17 +73,20 @@ func GetTransaccions(c *gin.Context) {
 					return
 				}
 				tr.NombreCategoria = cat.Nombre
-				if tr.CasoID != 0 {
-					don := &models.Donacion{}
-					err = models.Db.First(don, tr.CasoID).Error
-					if err != nil {
-						_ = c.Error(err)
-						utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
-						return
-					}
-					tr.NombreCaso = don.Nombre
+
+			}
+			if tr.CasoID != 0 {
+				don := &models.Donacion{}
+				err = models.Db.First(don, tr.CasoID).Error
+				if err != nil {
+					_ = c.Error(err)
+					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+					return
 				}
-			} else if tr.TipoPagoType == "emprendimiento" {
+				tr.NombreCaso = don.Nombre
+			}
+		} else if tr.TipoPagoType == "emprendimiento" {
+			if tr.CategoriaID != 0 {
 				cat := &models.CategoriaMarket{}
 				err = models.Db.First(cat, tr.CategoriaID).Error
 				if err != nil {
@@ -90,6 +95,51 @@ func GetTransaccions(c *gin.Context) {
 					return
 				}
 				tr.NombreCategoria = cat.Nombre
+			}
+			if tr.CasoID != 0 {
+				don := &models.Emprendimiento{}
+				err = models.Db.First(don, tr.CasoID).Error
+				if err != nil {
+					_ = c.Error(err)
+					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+					return
+				}
+				tr.NombreCaso = don.Titulo
+			}
+		} else if tr.TipoPagoType == "intecion" {
+
+			if tr.CasoID != 0 {
+				don := &models.Intencion{}
+				err = models.Db.First(don, tr.CasoID).Error
+				if err != nil {
+					_ = c.Error(err)
+					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+					return
+				}
+				tr.NombreCaso = don.Nombre
+			}
+		} else if tr.TipoPagoType == "inscritos" {
+			if tr.CasoID != 0 {
+				don := &models.Inscrito{}
+				err = models.Db.Preload("Curso").First(don, tr.CasoID).Error
+				if err != nil {
+					_ = c.Error(err)
+					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+					return
+				}
+				nombre := don.Nombre + don.Apellido
+				tr.NombreCaso = fmt.Sprintf("Inscripcion %s a curso %s", nombre, don.Curso.Titulo)
+			}
+		} else if tr.TipoPagoType == "matrimonios" {
+			if tr.CasoID != 0 {
+				don := &models.Matrimonio{}
+				err = models.Db.First(don, tr.CasoID).Error
+				if err != nil {
+					_ = c.Error(err)
+					utils.CrearRespuesta(errors.New("Error al obtener transacciones"), nil, c, http.StatusInternalServerError)
+					return
+				}
+				tr.NombreCaso = fmt.Sprintf("Familia %s", don.Familia)
 			}
 		}
 	}
