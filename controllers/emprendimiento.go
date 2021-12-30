@@ -7,11 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/drmendoz/iglesias-backend/models"
 	"github.com/drmendoz/iglesias-backend/utils"
-	"github.com/drmendoz/iglesias-backend/utils/img"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -136,46 +134,6 @@ func CreateEmprendimiento(c *gin.Context) {
 	//_ = tx.Commit()
 	//utils.CrearRespuesta(nil, "Emprendimiento creado exitosamente", c, http.StatusOK)
 
-}
-
-func UpdateEmprendimiento(c *gin.Context) {
-	item := &models.Emprendimiento{}
-
-	err := c.ShouldBindJSON(item)
-	if err != nil {
-		utils.CrearRespuesta(err, nil, c, http.StatusBadRequest)
-		return
-	}
-	id := c.Param("id")
-	tx := models.Db.Begin()
-	err = tx.Omit("imagen").Where("id = ?", id).Updates(item).Error
-	if err != nil {
-		_ = c.Error(err)
-		utils.CrearRespuesta(errors.New("Error al actualizar item"), nil, c, http.StatusInternalServerError)
-		return
-	}
-	if item.Imagen != "" {
-		idUrb := fmt.Sprintf("%d", item.ID)
-		item.Imagen, err = img.FromBase64ToImage(item.Imagen, "items/"+time.Now().Format(time.RFC3339)+idUrb, false)
-		if err != nil {
-			_ = c.Error(err)
-			tx.Rollback()
-			utils.CrearRespuesta(errors.New("Error al crear item "), nil, c, http.StatusInternalServerError)
-
-			return
-		}
-		err = tx.Model(&models.Emprendimiento{}).Where("id = ?", item.ID).Update("imagen", item.Imagen).Error
-		if err != nil {
-			_ = c.Error(err)
-			utils.CrearRespuesta(errors.New("Error al actualizar item"), nil, c, http.StatusInternalServerError)
-			return
-		}
-		item.Imagen = utils.SERVIMG + item.Imagen
-
-	} else {
-		item.Imagen = utils.SERVIMG + "default_user.png"
-	}
-	utils.CrearRespuesta(err, "Item actualizado correctamente", c, http.StatusOK)
 }
 
 func DeleteEmprendimiento(c *gin.Context) {
