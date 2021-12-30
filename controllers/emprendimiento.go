@@ -37,7 +37,7 @@ func CreateEmprendimiento(c *gin.Context) {
 	tx := models.Db.Begin()
 	item.EmprendimientoImagenes = []*models.EmprendimientoImagen{}
 	for _, imagen := range item.Imagenes {
-		empImagen := &models.EmprendimientoImagen{Imagen: imagen}
+		empImagen := &models.EmprendimientoImagen{Imagen: utils.SERVIMG + imagen}
 		item.EmprendimientoImagenes = append(item.EmprendimientoImagenes, empImagen)
 	}
 	parroquia := &models.Parroquia{}
@@ -475,6 +475,9 @@ func ActualizarEmprendimiento(c *gin.Context) {
 	item.EmprendimientoImagenes = []*models.EmprendimientoImagen{}
 	for _, imagen := range item.Imagenes {
 		empImagen := &models.EmprendimientoImagen{}
+		if !strings.HasPrefix("https", imagen) {
+			imagen = utils.SERVIMG + imagen
+		}
 		empImagen.Imagen = imagen
 		item.EmprendimientoImagenes = append(item.EmprendimientoImagenes, empImagen)
 	}
